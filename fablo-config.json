@@ -4,7 +4,7 @@
     "fabricVersion": "2.4.7",
     "tls": false,
     "engine": "docker",
-    "peerDevMode": true,
+    "peerDevMode": false,
     "tools": {
       "explorer": true
     }

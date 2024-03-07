@@ -24,7 +24,7 @@ class KVContract extends Contract {
     return buffer_object;
   } // for testing the ledger 
   
-  async create_patient_instance(ctx, patient_id, hospital_id, _pointer, _hash) {
+  async create_patient_instance(ctx, patient_id, hospital_id, _hash) {
     // key : { patient }
     // value : { hospital_id : hospital_info_object }
 
@@ -33,21 +33,9 @@ class KVContract extends Contract {
     // 2 -> 區域醫院
     // 3 -> 地區醫院
     // 4 -> 基層診所
-    
-    const level = 3 ; // to get the hospital-level from did chain
-    // const rule_instance = {
-    //   level : level,
-    //   open_access : false
-    // }
-    // const _rule = {
-    //   hospital_id : rule_instance 
-    // } ;
-    // const pointer_object = {
-    //   hospital_id : _pointer 
-    // } ;
-    // const hash_object = {
-    //   hospital_id : _hash 
-    // } ;
+    const transient = ctx.stub.getTransient();
+    const _pointer = transient.get("pointer");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
+    const level = 4 ; // to get the hospital-level from did chain
     const hospital_info_object = {
       level : level,
       open_access : false,
@@ -57,11 +45,7 @@ class KVContract extends Contract {
     let value = {
       [hospital_id] : hospital_info_object //  hospital_DID -> info_object
     } ;
-    // let value = {
-    //   acl : _rule,               // object   hospital_DID->
-    //   pointer : pointer_object, // object    hospital_DID->pointer
-    //   hash : hash_object        // object    hospital_DID->hash
-    // } ;
+
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
     return { success: "OK (create_patient_instance)", DataOwner: patient_id}
   } // create_patient_instance
@@ -95,28 +79,34 @@ class KVContract extends Contract {
     // patient_id : 病患DID
     // hospital_id : 想要存取其他health-data的醫院DID
     // signature : hospital signature
-    // request_id : array, 想要存取的醫院們的DID array
-    let result = {} // must be a pair with hospital_id -> url ;
+    // request_id : object, hospital_id : hospital_name, 因無法使用array型傳遞 使用object取代
+    let result = {} ;// must be a pair with hospital_id -> url ;
 
     // The hospital_id is for digital signature use !!!
-    // check(singature, hospital_id) ; // authentication the singnature from DID chain  
-    let self_level = 3 // need to use did chain to verify hospital level
+    // check(signature, hospital_id) ; // authentication the singnature from DID chain  
+    // if the signature is produced by patient, need to give the access without any rules
+    let self_level = 3 ;// need to use did chain to verify hospital level
     const buffer = await ctx.stub.getState(patient_id) ;
     if (!buffer || !buffer.length) return { error: "(authorization)Patient NOT_FOUND" };
     const buffer_object = JSON.parse(buffer.toString()) ;
     let acl_keys = Object.keys(buffer_object) ;
     request_id = JSON.parse(request_id) ;
-    // request_id = Array.from(request_id.toString()) ; // need to change to array 
     for ( let attr in request_id ) {
-      console.log(attr) ;
       let key = acl_keys.find((e) => e == attr) ;
       if ( !key ) return { error : "(authorization)Request hospital_id NOT_FOUND" } ;
       let req_level = buffer_object[key]["level"] ;
-      if ( !buffer_object[key]["open access"] ) {
-        if ( self_level >  req_level ) 
+      if ( buffer_object[key]["open_access"] === false ) {
+        if ( self_level > Number(req_level) ) 
           result[key] = "Access Denied" ; // 因層級太低因此無法取得權限
+        else {
+          result[key] = buffer_object[key]["pointer"] ;
+          console.log("first else") ;
+        } // else   
       } // if
-      result[key] = buffer_object[key]["pointer"] ; // the pointer for the requested hospital
+      else {
+        result[key] = buffer_object[key]["pointer"] ; // the pointer for the requested hospital
+        console.log("second else") ;
+      } // else 
     } // for 
 
     return result ;
@@ -153,7 +143,7 @@ class KVContract extends Contract {
   async validate_hash(ctx, patient_id, hash_obj) {
     // hash_obj : { hospital_DID : hash } 上一次存取到的hash
     const buffer = await ctx.stub.getState(patient_id);
-    let result = [] ;
+    let result = {} ;
     if (!buffer || !buffer.length) return { error: "(validate_hash)Patient NOT_FOUND" };
     let buffer_object = JSON.parse(buffer.toString()) ;
     hash_obj = JSON.parse(hash_obj) ;
@@ -162,10 +152,11 @@ class KVContract extends Contract {
       let hospital_id = hash_key_array[i] ;
       if ( hash_obj.hasOwnProperty(hospital_id) ) {
         if ( hash_obj[hospital_id] != buffer_object[hospital_id]["hash"] ) // 表示需要更新hash值
-           result.push(hospital_id) ;
+          result[hospital_id] = "update" ;
       } // if
       else 
-        result.push(hospital_id) ; 
+        result[hospital_id] = "update" ; 
+
     } // for 
     
     return result ; // return the hospital did which need to be update

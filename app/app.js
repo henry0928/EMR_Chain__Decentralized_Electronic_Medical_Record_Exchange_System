@@ -20,6 +20,8 @@ const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
 const org1UserId = 'henry';
 
+const cycu_url = "https://cycu.com.tw" ;
+
 function prettyJSONString(inputString) {
 	return JSON.stringify(JSON.parse(inputString), null, 2);
 }
@@ -115,32 +117,34 @@ async function main() {
 			// This type of transaction would only be run once by an application the first time it was started after it
 			// deployed the first time. Any updates to the chaincode deployed later would likely not need to run
 			// an "init" type function.
-			let info = await contract.submitTransaction('create_patient_instance', 'emma', "cycu" , "140.121.207.45", "0x1204");
+
+			// let info = await contract.submitTransaction('create_patient_instance', 'henry', "cycu" , "0x1204");
+			let info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : encodeURIComponent(cycu_url).toString("base64")}).submit("henry","cycu", "ox1204");
 			console.log(JSON.parse(info.toString())) ;
-            info = await contract.submitTransaction('get', 'emma');
-			console.log(JSON.parse(info.toString()));
+            info = await contract.submitTransaction('get', 'henry');
 			console.log("create_patient_instance Success!");
+			console.log(JSON.parse(info.toString()));
 			
-			info = await contract.submitTransaction("update_hash", "emma", "cycu", "0xaabb1122") ;
-			console.log(JSON.parse(info.toString())) ;
-			info = await contract.submitTransaction("get", "emma") ;
-			console.log(JSON.parse(info.toString())) ;
-			console.log("update_hash Success!");
+			// info = await contract.submitTransaction("update_hash", "henry", "cycu", "0x0928") ;
+			// console.log(JSON.parse(info.toString())) ;
+			// info = await contract.submitTransaction("get", "henry") ;
+			// console.log("update_hash Success!");
+			// console.log(JSON.parse(info.toString())) ;
 
-			info = await contract.submitTransaction("update_instance", "emma", "ntust", "https://ntust.com.tw", "0x0988") ;
-			console.log(JSON.parse(info.toString())) ;
-			info = await contract.submitTransaction("get", "emma") ;
-			console.log(JSON.parse(info.toString())) ;
-			console.log("update_instance Success!");
+			// info = await contract.submitTransaction("update_instance", "henry", "nycu", "https://nycu.com.tw", "0x0928") ;
+			// console.log(JSON.parse(info.toString())) ;
+			// info = await contract.submitTransaction("get", "henry") ;
+			// console.log("update_instance Success!");
+			// console.log(JSON.parse(info.toString())) ;
 
-			info = await contract.submitTransaction("validate_hash", "emma", "{ \"cycu\" : \"0xaabb\", \"ntust\" : \"0x11222\" }") ;
-			console.log(info.toString()) ;
-			let req = info.toString() ;
-			console.log("validate_hash Success!");
-			// need to solve req problem!!
-			info = await contract.submitTransaction("authorization", "emma", "test", "test", req) ;
-			console.log(info.toString()) ;
-			console.log("authorization Success!");
+			// info = await contract.submitTransaction("validate_hash", "henry", "{ \"cycu\" : \"0x0928\", \"nycu\" : \"0x11222\" }") ;
+			// let req = info.toString() ;
+			// console.log("validate_hash Success!");
+			// console.log(req) ;
+
+			// info = await contract.submitTransaction("authorization", "henry", "test", "test", req) ;
+			// console.log("authorization Success!");
+			// console.log(info.toString()) ;
 			
 		} finally {
 			// Disconnect from the gateway when the application is closing
