@@ -119,7 +119,7 @@ async function main() {
 			// an "init" type function.
 
 			// let info = await contract.submitTransaction('create_patient_instance', 'henry', "cycu" , "0x1204");
-			let info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : encodeURIComponent(cycu_url).toString("base64")}).submit("henry","cycu", "ox1204");
+			let info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : encodeURIComponent(cycu_url).toString("base64")}).submit("Emma","cycu", "0x1204");
 			console.log(JSON.parse(info.toString())) ;
             info = await contract.submitTransaction('get', 'henry');
 			console.log("create_patient_instance Success!");

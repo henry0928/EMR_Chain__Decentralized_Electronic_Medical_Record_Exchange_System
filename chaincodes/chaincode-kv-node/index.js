@@ -1,4 +1,5 @@
 const { Contract } = require("fabric-contract-api");
+// const ClientIdentity = require('fabric-shim').ClientIdentity;
 const crypto = require("crypto");
 
 class KVContract extends Contract {
@@ -33,8 +34,12 @@ class KVContract extends Contract {
     // 2 -> 區域醫院
     // 3 -> 地區醫院
     // 4 -> 基層診所
+    const user_id = ctx.clientIdentity.getAttributeValue("hf.EnrollmentID") ; // return enrollmentID of the user who commit the transaction
+    // if ( user_id != patient_id )
+    //   new ErrorResponse(500, "User_ID is NOT MATCH") ; // need to be fix!
+    const msp = ctx.clientIdentity.getMSPID() ; // return the MSPID
     const transient = ctx.stub.getTransient();
-    const _pointer = transient.get("pointer");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
+    const _pointer = transient.get("pointer").toString();  // need to fix the url problem // remember that the upload url will be encrypt!!!!
     const level = 4 ; // to get the hospital-level from did chain
     const hospital_info_object = {
       level : level,
@@ -47,8 +52,10 @@ class KVContract extends Contract {
     } ;
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
-    return { success: "OK (create_patient_instance)", DataOwner: patient_id}
-  } // create_patient_instance
+    return { success: "OK (create_patient_instance)", 
+             DataOwner: patient_id 
+           } ;   
+  } // create_patient_instance()
 
   async update_instance(ctx, patient_id, hospital_id, _pointer, _hash) {
     const buffer = await ctx.stub.getState(patient_id);
