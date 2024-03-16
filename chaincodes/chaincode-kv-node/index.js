@@ -1,6 +1,6 @@
 const { Contract } = require("fabric-contract-api");
-// const ClientIdentity = require('fabric-shim').ClientIdentity;
 const crypto = require("crypto");
+// const shim = require('fabric-shim');
 
 class KVContract extends Contract {
   constructor() {
@@ -10,6 +10,19 @@ class KVContract extends Contract {
   async instantiate() {
     // function that will be invoked on chaincode instantiation
   }
+
+  async beforeTransaction(ctx){  // To verify the identity who commit the transaction
+    const input = ctx.stub.getFunctionAndParameters() ;
+    const commit_id = ctx.clientIdentity.getAttributeValue("hf.EnrollmentID") ;
+    if ( input["fcn"] === "create_patient_instance" || input["fcn"] === "update_instance" || input["fcn"] === "consent_access" || input["fcn"] == "revoke_access" 
+       || input["fcn"] == "update_hash") {
+      if ( commit_id != input["params"][0] ) {
+        const log = "User_ID is NOT MATCH, Reject transaction!!!" + " (" + input["fcn"] + ")" ;
+        throw new Error(log) ;    
+      } // if     
+    } // if 
+      
+  } // beforeTransaction()
 
   async put(ctx, key, value) {
     await ctx.stub.putState(key, Buffer.from(value));
@@ -34,12 +47,11 @@ class KVContract extends Contract {
     // 2 -> 區域醫院
     // 3 -> 地區醫院
     // 4 -> 基層診所
-    const user_id = ctx.clientIdentity.getAttributeValue("hf.EnrollmentID") ; // return enrollmentID of the user who commit the transaction
-    // if ( user_id != patient_id )
-    //   new ErrorResponse(500, "User_ID is NOT MATCH") ; // need to be fix!
-    const msp = ctx.clientIdentity.getMSPID() ; // return the MSPID
+
+    const buffer = await ctx.stub.getState(patient_id);
+    if ( buffer.length ) return { error: "(create_patient_instance)Patient EXIST" };;  
     const transient = ctx.stub.getTransient();
-    const _pointer = transient.get("pointer").toString();  // need to fix the url problem // remember that the upload url will be encrypt!!!!
+    const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
     const level = 4 ; // to get the hospital-level from did chain
     const hospital_info_object = {
       level : level,
@@ -53,13 +65,15 @@ class KVContract extends Contract {
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
     return { success: "OK (create_patient_instance)", 
-             DataOwner: patient_id 
+             DataOwner: patient_id,
            } ;   
   } // create_patient_instance()
 
-  async update_instance(ctx, patient_id, hospital_id, _pointer, _hash) {
+  async update_instance(ctx, patient_id, hospital_id, _hash) {
     const buffer = await ctx.stub.getState(patient_id);
     if (!buffer || !buffer.length) return { error: "(update_instance)Patient NOT_FOUND" };
+    const transient = ctx.stub.getTransient();
+    const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
     let buffer_object = JSON.parse(buffer.toString()) ;
     const level  = 2 ; // need to get the level from DID chain 
     const value = {
@@ -82,16 +96,16 @@ class KVContract extends Contract {
     return { success : "OK (update_hash)" } ; 
   } // update_hash()
 
-  async authorization(ctx, patient_id, hospital_id, signature, request_id) {
-    // patient_id : 病患DID
-    // hospital_id : 想要存取其他health-data的醫院DID
+  async authorization(ctx, patient_id, patient_did, hospital_did, patient_signature, hospital_signature, request_id) {
+    // patient_did : 病患DID
+    // hospital_did : 想要存取其他health-data的醫院DID
     // signature : hospital signature
     // request_id : object, hospital_id : hospital_name, 因無法使用array型傳遞 使用object取代
     let result = {} ;// must be a pair with hospital_id -> url ;
 
-    // The hospital_id is for digital signature use !!!
-    // check(signature, hospital_id) ; // authentication the singnature from DID chain  
-    // if the signature is produced by patient, need to give the access without any rules
+    // The patient_did, hospital_did are for digital signature use !!!
+    // check(patient_signature, patient_did) ; // authentication the singnature from DID chain
+    // check(hospital_signature, hospital_did) ; // authentication the singnature from DID chain 
     let self_level = 3 ;// need to use did chain to verify hospital level
     const buffer = await ctx.stub.getState(patient_id) ;
     if (!buffer || !buffer.length) return { error: "(authorization)Patient NOT_FOUND" };
@@ -107,12 +121,12 @@ class KVContract extends Contract {
           result[key] = "Access Denied" ; // 因層級太低因此無法取得權限
         else {
           result[key] = buffer_object[key]["pointer"] ;
-          console.log("first else") ;
+          // console.log("first else") ;
         } // else   
       } // if
       else {
         result[key] = buffer_object[key]["pointer"] ; // the pointer for the requested hospital
-        console.log("second else") ;
+        // console.log("second else") ;
       } // else 
     } // for 
 

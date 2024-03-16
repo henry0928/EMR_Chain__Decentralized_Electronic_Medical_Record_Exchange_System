@@ -18,9 +18,10 @@ const chaincodeName = process.env.CHAINCODE_NAME || 'chaincode1';
 
 const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
-const org1UserId = 'henry';
+const org1UserId = 'emma';
 
 const cycu_url = "https://cycu.com.tw" ;
+const nycu_url = "https://nycu.com,tw" ;
 
 function prettyJSONString(inputString) {
 	return JSON.stringify(JSON.parse(inputString), null, 2);
@@ -119,11 +120,17 @@ async function main() {
 			// an "init" type function.
 
 			// let info = await contract.submitTransaction('create_patient_instance', 'henry', "cycu" , "0x1204");
-			let info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : encodeURIComponent(cycu_url).toString("base64")}).submit("Emma","cycu", "0x1204");
-			console.log(JSON.parse(info.toString())) ;
-            info = await contract.submitTransaction('get', 'henry');
-			console.log("create_patient_instance Success!");
-			console.log(JSON.parse(info.toString()));
+			// let info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : cycu_url}).submit("henry","cycu", "0x0928");
+			// console.log(JSON.parse(info.toString())) ;
+            // info = await contract.submitTransaction('get', 'henry');
+			// console.log("create_patient_instance Success!");
+			// console.log(JSON.parse(info.toString()));
+
+			// info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : cycu_url}).submit("emma","cycu", "0x1204");
+			// console.log(JSON.parse(info.toString())) ;
+            // info = await contract.submitTransaction('get', 'emma');
+			// console.log("create_patient_instance Success!");
+			// console.log(JSON.parse(info.toString()));
 			
 			// info = await contract.submitTransaction("update_hash", "henry", "cycu", "0x0928") ;
 			// console.log(JSON.parse(info.toString())) ;
@@ -131,11 +138,12 @@ async function main() {
 			// console.log("update_hash Success!");
 			// console.log(JSON.parse(info.toString())) ;
 
-			// info = await contract.submitTransaction("update_instance", "henry", "nycu", "https://nycu.com.tw", "0x0928") ;
-			// console.log(JSON.parse(info.toString())) ;
+			let info = await contract.createTransaction("update_instance").setTransient({"pointer" : nycu_url}).submit("emma","nycu", "0x1105");
+			console.log(JSON.parse(info.toString())) ;
 			// info = await contract.submitTransaction("get", "henry") ;
 			// console.log("update_instance Success!");
 			// console.log(JSON.parse(info.toString())) ;
+
 
 			// info = await contract.submitTransaction("validate_hash", "henry", "{ \"cycu\" : \"0x0928\", \"nycu\" : \"0x11222\" }") ;
 			// let req = info.toString() ;
