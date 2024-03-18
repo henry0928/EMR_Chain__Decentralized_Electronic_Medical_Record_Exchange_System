@@ -18,7 +18,8 @@ const chaincodeName = process.env.CHAINCODE_NAME || 'chaincode1';
 
 const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
-const org1UserId = 'emma';
+const org1UserId = 'henry';
+const adminUserId = 'admin';
 
 const cycu_url = "https://cycu.com.tw" ;
 const nycu_url = "https://nycu.com,tw" ;
@@ -74,6 +75,54 @@ function prettyJSONString(inputString) {
  * To see the SDK workings, try setting the logging to show on the console before running
  *        export HFC_LOGGING='{"debug":"console"}'
  */
+
+async function create_instance() {
+	try {
+		// build an in memory object with the network configuration (also known as a connection profile)
+        const ccp = buildCCPOrg1();
+		// build an instance of the fabric ca services client based on
+		// the information in the network configuration
+        // console.log(ccp);
+		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
+		// setup the wallet to hold the credentials of the application user
+		const wallet = await buildWallet(Wallets, walletPath);
+
+		// in a real application this would be done on an administrative flow, and only once
+		await enrollAdmin(caClient, wallet, mspOrg1);
+		const gateway = new Gateway();
+
+		try {
+			await gateway.connect(ccp, {
+				wallet,
+				identity: adminUserId,
+				discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+			});
+
+			// Build a network instance based on the channel where the smart contract is deployed
+			const network = await gateway.getNetwork(channelName);
+
+			// Get the contract from the network.
+			const contract = network.getContract(chaincodeName);
+
+			let info = await contract.submitTransaction('create_patient_instance', 'henry');
+			console.log(JSON.parse(info.toString())) ;
+            info = await contract.submitTransaction('get', 'henry');
+			console.log(JSON.parse(info.toString()));
+			console.log("create_patient_instance Success!");
+			
+		} finally {
+			// Disconnect from the gateway when the application is closing
+			// This will close all connections to the network
+			gateway.disconnect();
+		}
+	} catch (error) {
+		console.error(`******** FAILED to run the application: ${error}`);
+		process.exit(1);
+	}
+
+
+} // create_instance()
+
 async function main() {
 	try {
 		// build an in memory object with the network configuration (also known as a connection profile)
@@ -138,17 +187,15 @@ async function main() {
 			// console.log("update_hash Success!");
 			// console.log(JSON.parse(info.toString())) ;
 
-			let info = await contract.createTransaction("update_instance").setTransient({"pointer" : nycu_url}).submit("emma","nycu", "0x1105");
+			let info = await contract.createTransaction("update_instance").setTransient({"pointer" : nycu_url}).submit("henry","Org2MSP", "0x1105");
 			console.log(JSON.parse(info.toString())) ;
-			// info = await contract.submitTransaction("get", "henry") ;
-			// console.log("update_instance Success!");
-			// console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("get", "henry") ;
+			console.log(JSON.parse(info.toString())) ;
+			console.log("update_instance Success!");
 
 
-			// info = await contract.submitTransaction("validate_hash", "henry", "{ \"cycu\" : \"0x0928\", \"nycu\" : \"0x11222\" }") ;
-			// let req = info.toString() ;
-			// console.log("validate_hash Success!");
-			// console.log(req) ;
+			info = await contract.submitTransaction("revoke_access", "henry", "Org2MSP") ;
+			console.log(JSON.parse(info.toString())) ;
 
 			// info = await contract.submitTransaction("authorization", "henry", "test", "test", req) ;
 			// console.log("authorization Success!");
@@ -165,5 +212,5 @@ async function main() {
 	}
 }
 
-
+//create_instance();
 main();

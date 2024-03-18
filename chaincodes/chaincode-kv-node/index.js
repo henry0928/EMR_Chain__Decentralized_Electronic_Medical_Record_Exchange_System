@@ -14,13 +14,25 @@ class KVContract extends Contract {
   async beforeTransaction(ctx){  // To verify the identity who commit the transaction
     const input = ctx.stub.getFunctionAndParameters() ;
     const commit_id = ctx.clientIdentity.getAttributeValue("hf.EnrollmentID") ;
-    if ( input["fcn"] === "create_patient_instance" || input["fcn"] === "update_instance" || input["fcn"] === "consent_access" || input["fcn"] == "revoke_access" 
-       || input["fcn"] == "update_hash") {
-      if ( commit_id != input["params"][0] ) {
-        const log = "User_ID is NOT MATCH, Reject transaction!!!" + " (" + input["fcn"] + ")" ;
+    const msp_id = ctx.stub.getMspID() ;
+    if ( input["fcn"] === "create_patient_instance" ) { // Only admin can create instance
+      if ( commit_id != "admin" ) {
+        const log = "Only admin can create the instance ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
+        throw new Error(log) ;   
+      } // if 
+    } // if 
+    else if ( input["fcn"] === "consent_access" || input["fcn"] === "revoke_access" ) {
+      if ( commit_id != input["params"][0] ) { // input["params"][0] == patient_id
+        const log = "User_ID is NOT MATCH, Reject transaction!!! ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;    
       } // if     
-    } // if 
+    } // if
+    else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only can update own(Hospital) record
+      if ( msp_id != input["params"][1] ) { // input["params"][0] == hospital_id
+        const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " ) " + " (" + input["fcn"] + ")" ;
+        throw new Error(log) ;    
+      } // if 
+    } // else if 
       
   } // beforeTransaction()
 
@@ -38,7 +50,15 @@ class KVContract extends Contract {
     return buffer_object;
   } // for testing the ledger 
   
-  async create_patient_instance(ctx, patient_id, hospital_id, _hash) {
+  async create_patient_instance(ctx, patient_id) {
+    const buffer = await ctx.stub.getState(patient_id);
+    if ( buffer.length ) return { error: "(create_patient_instance)Patient EXIST" };;  
+    // const transient = ctx.stub.getTransient();
+    // const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
+    // const level = 4 ; // to get the hospital-level from did chain
+
+    // THE DATA-STRUCTURE of Access Control instance !!! 
+
     // key : { patient }
     // value : { hospital_id : hospital_info_object }
 
@@ -48,19 +68,19 @@ class KVContract extends Contract {
     // 3 -> 地區醫院
     // 4 -> 基層診所
 
-    const buffer = await ctx.stub.getState(patient_id);
-    if ( buffer.length ) return { error: "(create_patient_instance)Patient EXIST" };;  
-    const transient = ctx.stub.getTransient();
-    const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
-    const level = 4 ; // to get the hospital-level from did chain
-    const hospital_info_object = {
-      level : level,
-      open_access : false,
-      pointer : _pointer,
-      hash : _hash
-    } ;
+    // const hospital_info_object = {
+    //   level : level,
+    //   open_access : false,
+    //   pointer : _pointer,
+    //   hash : _hash
+    // } ;
+    // let value = {
+    //   [hospital_id] : hospital_info_object //  hospital_DID -> info_object
+    // } ;
+
+    const _creater = ctx.stub.getMspID() ;
     let value = {
-      [hospital_id] : hospital_info_object //  hospital_DID -> info_object
+      Creater : _creater // To record the creator of access control instance 
     } ;
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
