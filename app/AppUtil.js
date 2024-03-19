@@ -17,7 +17,8 @@ exports.buildCCPOrg1 = () => {
 	if (!fileExists) {
 		throw new Error(`no such file or directory: ${ccpPath}`);
 	}
-	const contents = fs.readFileSync(ccpPath);
+	// const contents = fs.readFileSync(ccpPath);
+	const contents = fs.readFileSync(ccpPath, 'utf8');
 
 	// build a JSON object from the file contents
 	const ccp = JSON.parse(contents);
@@ -28,8 +29,9 @@ exports.buildCCPOrg1 = () => {
 
 exports.buildCCPOrg2 = () => {
 	// load the common connection configuration file
-	const ccpPath = path.resolve(__dirname, '..', '..', 'test-network',
-		'organizations', 'peerOrganizations', 'org2.example.com', 'connection-org2.json');
+	// const ccpPath = path.resolve(__dirname, '..', '..', 'test-network',
+	// 	'organizations', 'peerOrganizations', 'org2.example.com', 'connection-org2.json');
+	const ccpPath = '../fablo-target/fabric-config/connection-profiles/connection-profile-org2.json';
 	const fileExists = fs.existsSync(ccpPath);
 	if (!fileExists) {
 		throw new Error(`no such file or directory: ${ccpPath}`);

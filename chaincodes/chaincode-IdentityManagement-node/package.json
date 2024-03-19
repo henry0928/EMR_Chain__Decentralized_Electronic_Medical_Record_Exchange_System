@@ -1,0 +1,15 @@
+{
+  "name": "id-management",
+  "version": "1.0.0",
+  "description": "The chaincode for IdentityManagement",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Henry",
+  "license": "ISC",
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "fabric-contract-api": "^2.5.4"
+  }
+}

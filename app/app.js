@@ -9,8 +9,8 @@
 const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require('fabric-ca-client');
 const path = require('path');
-const { buildCAClient, registerAndEnrollUser, enrollAdmin } = require('./CAUtil.js');
-const { buildCCPOrg1, buildWallet } = require('./AppUtil.js');
+const { buildCAClient, registerAndEnrollUser, enrollAdmin} = require('./CAUtil.js');
+const { buildCCPOrg1, buildCCPOrg2, buildWallet } = require('./AppUtil.js');
 const { assert } = require('console');
 
 const channelName = process.env.CHANNEL_NAME || 'my-channel1';
@@ -19,7 +19,7 @@ const chaincodeName = process.env.CHAINCODE_NAME || 'chaincode1';
 const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
 const org1UserId = 'henry';
-const adminUserId = 'admin';
+const supervisorId = 'supervisor';
 
 const cycu_url = "https://cycu.com.tw" ;
 const nycu_url = "https://nycu.com,tw" ;
@@ -76,25 +76,37 @@ function prettyJSONString(inputString) {
  *        export HFC_LOGGING='{"debug":"console"}'
  */
 
-async function create_instance() {
+async function main() {
 	try {
 		// build an in memory object with the network configuration (also known as a connection profile)
         const ccp = buildCCPOrg1();
+		// const ccp = buildCCPOrg2();
+
 		// build an instance of the fabric ca services client based on
 		// the information in the network configuration
-        // console.log(ccp);
+
 		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
+		// const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org2.example.com');
+
 		// setup the wallet to hold the credentials of the application user
 		const wallet = await buildWallet(Wallets, walletPath);
 
 		// in a real application this would be done on an administrative flow, and only once
 		await enrollAdmin(caClient, wallet, mspOrg1);
-		const gateway = new Gateway();
 
+		// in a real application this would be done only when a new user was required to be added
+		// and would be part of an administrative flow
+		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId);
+		await registerAndEnrollUser(caClient, wallet, mspOrg1, supervisorId); // Enroll the supervisor
+
+		// Create a new gateway instance for interacting with the fabric network.
+		// In a real application this would be done as the backend server session is setup for
+		// a user that has been verified.
+		let gateway = new Gateway();
 		try {
 			await gateway.connect(ccp, {
 				wallet,
-				identity: adminUserId,
+				identity: supervisorId,
 				discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
 			});
 
@@ -110,42 +122,15 @@ async function create_instance() {
 			console.log(JSON.parse(info.toString()));
 			console.log("create_patient_instance Success!");
 			
-		} finally {
+		} // try
+		finally {
 			// Disconnect from the gateway when the application is closing
 			// This will close all connections to the network
 			gateway.disconnect();
-		}
-	} catch (error) {
-		console.error(`******** FAILED to run the application: ${error}`);
-		process.exit(1);
-	}
-
-
-} // create_instance()
-
-async function main() {
-	try {
-		// build an in memory object with the network configuration (also known as a connection profile)
-        const ccp = buildCCPOrg1();
-		// build an instance of the fabric ca services client based on
-		// the information in the network configuration
-        // console.log(ccp);
-		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
-		// setup the wallet to hold the credentials of the application user
-		const wallet = await buildWallet(Wallets, walletPath);
-
-		// in a real application this would be done on an administrative flow, and only once
-		await enrollAdmin(caClient, wallet, mspOrg1);
-
-		// in a real application this would be done only when a new user was required to be added
-		// and would be part of an administrative flow
-		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId);
-
-		// Create a new gateway instance for interacting with the fabric network.
-		// In a real application this would be done as the backend server session is setup for
-		// a user that has been verified.
-		const gateway = new Gateway();
-
+			// gateway = new Gateway() ;
+		} // finally
+		
+		gateway = new Gateway() ;
 		try {
 			// setup the gateway instance
 			// The user will now be able to create connections to the fabric network and be able to
@@ -168,49 +153,44 @@ async function main() {
 			// deployed the first time. Any updates to the chaincode deployed later would likely not need to run
 			// an "init" type function.
 
-			// let info = await contract.submitTransaction('create_patient_instance', 'henry', "cycu" , "0x1204");
-			// let info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : cycu_url}).submit("henry","cycu", "0x0928");
-			// console.log(JSON.parse(info.toString())) ;
-            // info = await contract.submitTransaction('get', 'henry');
-			// console.log("create_patient_instance Success!");
-			// console.log(JSON.parse(info.toString()));
-
 			// info = await contract.createTransaction("create_patient_instance").setTransient({"pointer" : cycu_url}).submit("emma","cycu", "0x1204");
 			// console.log(JSON.parse(info.toString())) ;
             // info = await contract.submitTransaction('get', 'emma');
 			// console.log("create_patient_instance Success!");
-			// console.log(JSON.parse(info.toString()));
-			
-			// info = await contract.submitTransaction("update_hash", "henry", "cycu", "0x0928") ;
-			// console.log(JSON.parse(info.toString())) ;
-			// info = await contract.submitTransaction("get", "henry") ;
-			// console.log("update_hash Success!");
 			// console.log(JSON.parse(info.toString())) ;
 
-			let info = await contract.createTransaction("update_instance").setTransient({"pointer" : nycu_url}).submit("henry","Org2MSP", "0x1105");
+			let info = await contract.createTransaction("update_instance").setTransient({"pointer" : nycu_url}).submit("henry", mspOrg1, "0x0928");
 			console.log(JSON.parse(info.toString())) ;
 			info = await contract.submitTransaction("get", "henry") ;
 			console.log(JSON.parse(info.toString())) ;
 			console.log("update_instance Success!");
 
-
-			info = await contract.submitTransaction("revoke_access", "henry", "Org2MSP") ;
+			info = await contract.submitTransaction("update_hash", "henry", mspOrg1, "0x1105") ;
 			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("get", "henry") ;
+			console.log(JSON.parse(info.toString())) ;
+			console.log("update_hash Success!");
+
+			info = await contract.submitTransaction("consent_access", "henry", mspOrg1) ;
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("get", "henry") ;
+			console.log(JSON.parse(info.toString())) ;
+			console.log("consent_access Success!");
 
 			// info = await contract.submitTransaction("authorization", "henry", "test", "test", req) ;
 			// console.log("authorization Success!");
 			// console.log(info.toString()) ;
 			
-		} finally {
+		} // try 
+		finally {
 			// Disconnect from the gateway when the application is closing
 			// This will close all connections to the network
 			gateway.disconnect();
-		}
+		} // finally
 	} catch (error) {
 		console.error(`******** FAILED to run the application: ${error}`);
 		process.exit(1);
 	}
 }
 
-//create_instance();
 main();

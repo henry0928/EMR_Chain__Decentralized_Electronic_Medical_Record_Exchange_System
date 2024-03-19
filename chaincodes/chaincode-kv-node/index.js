@@ -13,10 +13,10 @@ class KVContract extends Contract {
 
   async beforeTransaction(ctx){  // To verify the identity who commit the transaction
     const input = ctx.stub.getFunctionAndParameters() ;
-    const commit_id = ctx.clientIdentity.getAttributeValue("hf.EnrollmentID") ;
-    const msp_id = ctx.stub.getMspID() ;
-    if ( input["fcn"] === "create_patient_instance" ) { // Only admin can create instance
-      if ( commit_id != "admin" ) {
+    const commit_id = ctx.clientIdentity.getAttributeValue("user_id") ;
+    const msp_id = ctx.clientIdentity.getAttributeValue("regist_msp") ;
+    if ( input["fcn"] === "create_patient_instance" ) { // Only supervisor can create instance
+      if ( commit_id != "supervisor" ) {
         const log = "Only admin can create the instance ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;   
       } // if 
@@ -28,8 +28,9 @@ class KVContract extends Contract {
       } // if     
     } // if
     else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only can update own(Hospital) record
-      if ( msp_id != input["params"][1] ) { // input["params"][0] == hospital_id
-        const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " ) " + " (" + input["fcn"] + ")" ;
+      if ( commit_id != input["params"][0] ||  msp_id != input["params"][1] ) { // input["params"][0] == hospital_id
+        const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " or Wrong commit_id: " + 
+                    commit_id + " ) " +  "(" + input["fcn"] + ")" ;
         throw new Error(log) ;    
       } // if 
     } // else if 
@@ -45,7 +46,7 @@ class KVContract extends Contract {
     const buffer = await ctx.stub.getState(key);
     if (!buffer || !buffer.length) return { error: "get NOT_FOUND" };
     let buffer_object = JSON.parse(buffer.toString()) ;
-    buffer_object["success"] = "OK" ; 
+    //buffer_object["success"] = "OK" ; 
     console.log(buffer_object) ; 
     return buffer_object;
   } // for testing the ledger 
@@ -78,7 +79,9 @@ class KVContract extends Contract {
     //   [hospital_id] : hospital_info_object //  hospital_DID -> info_object
     // } ;
 
-    const _creater = ctx.stub.getMspID() ;
+    // const _creater = ctx.stub.getMspID() ; // use getMspID() may get the another mspID(i guess because the transaction is
+    // commit by another org)
+    const _creater = ctx.clientIdentity.getAttributeValue("regist_msp") ; // here need to be figure out !
     let value = {
       Creater : _creater // To record the creator of access control instance 
     } ;
