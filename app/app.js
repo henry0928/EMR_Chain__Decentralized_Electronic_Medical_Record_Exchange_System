@@ -15,6 +15,8 @@ const { assert } = require('console');
 
 const channelName = process.env.CHANNEL_NAME || 'my-channel1';
 const chaincodeName = process.env.CHAINCODE_NAME || 'chaincode1';
+const TransactionRecord = "transaction-record" ; 
+const TSR = "TSR" ;
 
 const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
@@ -180,6 +182,38 @@ async function main() {
 			// info = await contract.submitTransaction("authorization", "henry", "test", "test", req) ;
 			// console.log("authorization Success!");
 			// console.log(info.toString()) ;
+			
+		} // try 
+		finally {
+			// Disconnect from the gateway when the application is closing
+			// This will close all connections to the network
+			gateway.disconnect();
+		} // finally
+		gateway = new Gateway() ;
+		try {
+			// setup the gateway instance
+			// The user will now be able to create connections to the fabric network and be able to
+			// submit transactions and query. All transactions submitted by this gateway will be
+			// signed by this user using the credentials stored in the wallet.
+			await gateway.connect(ccp, {
+				wallet,
+				identity: org1UserId,
+				discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+			});
+
+			// Build a network instance based on the channel where the smart contract is deployed
+			const network = await gateway.getNetwork(TransactionRecord);
+
+			// Get the contract from the network.
+			const contract = network.getContract(TSR);
+			
+			console.log("TransactionRecord channel......") ;
+			let info = await contract.submitTransaction("record", "henry", "nycu", "cycu", "observation", "health", "approve") ;
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("record", "henry", "nycu", "ntu", "condition", "insurance", "approve") ;
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("get", "henry") ;
+			console.log(JSON.parse(info.toString())) ;
 			
 		} // try 
 		finally {

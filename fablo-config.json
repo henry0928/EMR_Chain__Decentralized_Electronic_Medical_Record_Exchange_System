@@ -72,6 +72,25 @@
           ]
         }
       ]
+    },
+    {
+      "name": "transaction-record",
+      "orgs": [
+        {
+          "name": "Org1",
+          "peers": [
+            "peer0",
+            "peer1"
+          ]
+        },
+        {
+          "name": "Org2",
+          "peers": [
+            "peer0",
+            "peer1"
+          ]
+        }
+      ]
     }
   ],
   "chaincodes": [
@@ -81,6 +100,14 @@
       "lang": "node",
       "channel": "my-channel1",
       "directory": "./chaincodes/chaincode-kv-node",
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
+    },
+    {
+      "name": "TSR",
+      "version": "0.0.1",
+      "lang": "node",
+      "channel": "transaction-record",
+      "directory": "./chaincodes/chaincode-TransactionRecord-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     }
   ]
