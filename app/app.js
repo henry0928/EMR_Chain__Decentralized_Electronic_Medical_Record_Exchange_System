@@ -15,11 +15,17 @@ const { assert } = require('console');
 
 const channelName = process.env.CHANNEL_NAME || 'my-channel1';
 const chaincodeName = process.env.CHAINCODE_NAME || 'chaincode1';
+const AccessControl = "access-control" ;
+const ACL = "ACL" ;
 const TransactionRecord = "transaction-record" ; 
 const TSR = "TSR" ;
+const IdentityManagement = "identity-management" ; 
+const IDM = "IDM" ;
 
 const mspOrg1 = 'Org1MSP';
+const mspOrg2 = 'Org2MSP';
 const walletPath = path.join(__dirname, 'wallet');
+const walletPath2 = path.join(__dirname, 'wallet2');
 const org1UserId = 'henry';
 const supervisorId = 'supervisor';
 
@@ -82,24 +88,29 @@ async function main() {
 	try {
 		// build an in memory object with the network configuration (also known as a connection profile)
         const ccp = buildCCPOrg1();
-		// const ccp = buildCCPOrg2();
+		const ccp2 = buildCCPOrg2();
 
 		// build an instance of the fabric ca services client based on
 		// the information in the network configuration
 
 		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
+		const ca2Client = buildCAClient(FabricCAServices, ccp2, 'ca.org2.example.com');
 		// const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org2.example.com');
 
 		// setup the wallet to hold the credentials of the application user
 		const wallet = await buildWallet(Wallets, walletPath);
+		const wallet2 = await buildWallet(Wallets, walletPath2);
 
 		// in a real application this would be done on an administrative flow, and only once
 		await enrollAdmin(caClient, wallet, mspOrg1);
+		await enrollAdmin(ca2Client, wallet2, mspOrg2);
 
 		// in a real application this would be done only when a new user was required to be added
 		// and would be part of an administrative flow
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId);
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, supervisorId); // Enroll the supervisor
+
+		await registerAndEnrollUser(ca2Client, wallet2, mspOrg2, supervisorId); // Enroll the supervisor
 
 		// Create a new gateway instance for interacting with the fabric network.
 		// In a real application this would be done as the backend server session is setup for
@@ -113,10 +124,10 @@ async function main() {
 			});
 
 			// Build a network instance based on the channel where the smart contract is deployed
-			const network = await gateway.getNetwork(channelName);
+			const network = await gateway.getNetwork(AccessControl);
 
 			// Get the contract from the network.
-			const contract = network.getContract(chaincodeName);
+			const contract = network.getContract(ACL);
 
 			let info = await contract.submitTransaction('create_patient_instance', 'henry');
 			console.log(JSON.parse(info.toString())) ;
@@ -145,10 +156,10 @@ async function main() {
 			});
 
 			// Build a network instance based on the channel where the smart contract is deployed
-			const network = await gateway.getNetwork(channelName);
+			const network = await gateway.getNetwork(AccessControl);
 
 			// Get the contract from the network.
-			const contract = network.getContract(chaincodeName);
+			const contract = network.getContract(ACL);
 
 			// Initialize a set of asset data on the channel using the chaincode 'InitLedger' function.
 			// This type of transaction would only be run once by an application the first time it was started after it
@@ -162,6 +173,8 @@ async function main() {
 			// console.log(JSON.parse(info.toString())) ;
 
 			let info = await contract.createTransaction("update_instance").setTransient({"pointer" : nycu_url}).submit("henry", mspOrg1, "0x0928");
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.createTransaction("update_instance").setTransient({"pointer" : cycu_url}).submit("henry", mspOrg1, "0x1111");
 			console.log(JSON.parse(info.toString())) ;
 			info = await contract.submitTransaction("get", "henry") ;
 			console.log(JSON.parse(info.toString())) ;
@@ -221,6 +234,45 @@ async function main() {
 			// This will close all connections to the network
 			gateway.disconnect();
 		} // finally
+		gateway = new Gateway() ;
+		try {
+			// setup the gateway instance
+			// The user will now be able to create connections to the fabric network and be able to
+			// submit transactions and query. All transactions submitted by this gateway will be
+			// signed by this user using the credentials stored in the wallet.
+			await gateway.connect(ccp2, {
+				wallet : wallet2,
+				identity: supervisorId,
+				discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+			});
+
+			// Build a network instance based on the channel where the smart contract is deployed
+			const network = await gateway.getNetwork(IdentityManagement);
+
+			// Get the contract from the network.
+			const contract = network.getContract(IDM);
+			
+			console.log("IdentityManagement channel......") ;
+			let info = await contract.submitTransaction("create_identity", "henry", "henry0928", "123456789", "0000") ;
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("create_identity", "emma", "emma1204", "98765432111", "1111") ;
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("consent_doc_role", "123456789") ;
+			console.log(JSON.parse(info)) ;
+			info = await contract.submitTransaction("consent_sup_role", "98765432111") ;
+			console.log(JSON.parse(info)) ;
+			info = await contract.submitTransaction("get", "henry") ;
+			console.log(JSON.parse(info.toString())) ;
+			info = await contract.submitTransaction("get", "emma") ;
+			console.log(JSON.parse(info.toString())) ;
+			
+		} // try 
+		finally {
+			// Disconnect from the gateway when the application is closing
+			// This will close all connections to the network
+			gateway.disconnect();
+		} // finally
+
 	} catch (error) {
 		console.error(`******** FAILED to run the application: ${error}`);
 		process.exit(1);

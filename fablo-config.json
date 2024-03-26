@@ -33,7 +33,7 @@
       },
       "peer": {
         "instances": 2,
-        "db": "LevelDb"
+        "db": "CouchDb"
       },
       "tools": {
         "fabloRest": false
@@ -46,7 +46,7 @@
       },
       "peer": {
         "instances": 2,
-        "db": "LevelDb"
+        "db": "CouchDb"
       },
       "tools": {
         "fabloRest": false
@@ -55,7 +55,7 @@
   ],
   "channels": [
     {
-      "name": "my-channel1",
+      "name": "access-control",
       "orgs": [
         {
           "name": "Org1",
@@ -91,15 +91,34 @@
           ]
         }
       ]
+    },
+    {
+      "name": "identity-management",
+      "orgs": [
+        {
+          "name": "Org1",
+          "peers": [
+            "peer0",
+            "peer1"
+          ]
+        },
+        {
+          "name": "Org2",
+          "peers": [
+            "peer0",
+            "peer1"
+          ]
+        }
+      ]
     }
   ],
   "chaincodes": [
     {
-      "name": "chaincode1",
+      "name": "ACL",
       "version": "0.0.1",
       "lang": "node",
-      "channel": "my-channel1",
-      "directory": "./chaincodes/chaincode-kv-node",
+      "channel": "access-control",
+      "directory": "./chaincodes/chaincode-AccessControl-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     },
     {
@@ -108,6 +127,14 @@
       "lang": "node",
       "channel": "transaction-record",
       "directory": "./chaincodes/chaincode-TransactionRecord-node",
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
+    },
+    {
+      "name": "IDM",
+      "version": "0.0.1",
+      "lang": "node",
+      "channel": "identity-management",
+      "directory": "./chaincodes/chaincode-IdentityManagement-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     }
   ]

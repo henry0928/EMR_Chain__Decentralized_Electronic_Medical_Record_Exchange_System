@@ -2,9 +2,9 @@ const { Contract } = require("fabric-contract-api");
 const crypto = require("crypto");
 // const shim = require('fabric-shim');
 
-class KVContract extends Contract {
+class ACLContract extends Contract {
   constructor() {
-    super("KVContract");
+    super("ACLContract");
   }
 
   async instantiate() {
@@ -14,7 +14,7 @@ class KVContract extends Contract {
   async beforeTransaction(ctx){  // To verify the identity who commit the transaction
     const input = ctx.stub.getFunctionAndParameters() ;
     const commit_id = ctx.clientIdentity.getAttributeValue("user_id") ;
-    const msp_id = ctx.clientIdentity.getAttributeValue("regist_msp") ;
+    const peer_id = ctx.clientIdentity.getAttributeValue("peer") ;
     if ( input["fcn"] === "create_patient_instance" ) { // Only supervisor can create instance
       if ( commit_id != "supervisor" ) {
         const log = "Only admin can create the instance ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
@@ -28,7 +28,7 @@ class KVContract extends Contract {
       } // if     
     } // if
     else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only can update own(Hospital) record
-      if ( commit_id != input["params"][0] ||  msp_id != input["params"][1] ) { // input["params"][0] == hospital_id
+      if ( commit_id != input["params"][0] ||  peer_id != input["params"][1] ) { // input["params"][0] == hospital_id
         const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " or Wrong commit_id: " + 
                     commit_id + " ) " +  "(" + input["fcn"] + ")" ;
         throw new Error(log) ;    
@@ -36,11 +36,6 @@ class KVContract extends Contract {
     } // else if 
       
   } // beforeTransaction()
-
-  async put(ctx, key, value) {
-    await ctx.stub.putState(key, Buffer.from(value));
-    return { success: "ok" };
-  } // for testing the ledger 
 
   async get(ctx, key) {
     const buffer = await ctx.stub.getState(key);
@@ -81,7 +76,7 @@ class KVContract extends Contract {
 
     // const _creater = ctx.stub.getMspID() ; // use getMspID() may get the another mspID(i guess because the transaction is
     // commit by another org)
-    const _creater = ctx.clientIdentity.getAttributeValue("regist_msp") ; // here need to be figure out !
+    const _creater = ctx.clientIdentity.getAttributeValue("peer") ; // here need to be figure out !
     let value = {
       Creater : _creater // To record the creator of access control instance 
     } ;
@@ -207,30 +202,6 @@ class KVContract extends Contract {
     
   } // validate_hash()
 
-  async putPrivateMessage(ctx, collection) {
-    const transient = ctx.stub.getTransient();
-    const message = transient.get("message");
-    await ctx.stub.putPrivateData(collection, "message", message);
-    return { success: "OK" };
-  }
-
-  async getPrivateMessage(ctx, collection) {
-    const message = await ctx.stub.getPrivateData(collection, "message");
-    const messageString = message.toBuffer ? message.toBuffer().toString() : message.toString();
-    return { success: messageString };
-  }
-
-  async verifyPrivateMessage(ctx, collection) {
-    const transient = ctx.stub.getTransient();
-    const message = transient.get("message");
-    const messageString = message.toBuffer ? message.toBuffer().toString() : message.toString();
-    const currentHash = crypto.createHash("sha256").update(messageString).digest("hex");
-    const privateDataHash = (await ctx.stub.getPrivateDataHash(collection, "message")).toString("hex");
-    if (privateDataHash !== currentHash) {
-      return { error: "VERIFICATION_FAILED" };
-    }
-    return { success: "OK" };
-  }
 }
 
-exports.contracts = [KVContract];
+exports.contracts = [ACLContract];

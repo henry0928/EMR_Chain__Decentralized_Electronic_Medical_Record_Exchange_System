@@ -79,12 +79,12 @@ exports.registerAndEnrollUser = async (caClient, wallet, orgMspId, userId, affil
 			affiliation: affiliation,
 			enrollmentID: userId,
 			role: 'client',
-			attrs: [{ name : "user_id", value : userId }, { name : "regist_msp", value : orgMspId }] 
+			attrs: [{ name : "user_id", value : userId }, { name : "peer", value : orgMspId }] 
 		}, adminUser);
 		const enrollment = await caClient.enroll({
 			enrollmentID: userId,
 			enrollmentSecret: secret,
-			attr_reqs: [{ name: "regist_msp", optional: false }, { name : "user_id", optional : false }]
+			attr_reqs: [{ name: "peer", optional: false }, { name : "user_id", optional : false }]
 		});
 		const x509Identity = {
 			credentials: {
