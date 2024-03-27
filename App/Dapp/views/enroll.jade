@@ -1,0 +1,31 @@
+doctype html
+html
+  head
+    title Enrollment Page
+    |   
+    link(rel='stylesheet', type='text/css', href='stylesheets/enroll.css')
+  body
+    .container
+      h1 Enrollment Page
+      |     
+      form#enroll-form(action='/enroll', method='POST')
+        .form-group
+          label(for='name') Name:
+          |         
+          input#name(type='text', name='name', placeholder='Enter your name')
+        |       
+        .form-group
+          label(for='email') Email:
+          |         
+          input#email(type='email', name='email', placeholder='Enter your email')
+        .form-group
+          label(for='nationalid') Nationalid:
+          |         
+          input#name(type='text', name='nationalid', placeholder='Enter your NationalId')
+        |     
+        .form-group
+          label(for='password') Password:
+          |         
+          input#password(type='password', name='password', placeholder='Enter your password')
+        |       
+        button.enroll-button(type='submit') Enroll

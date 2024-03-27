@@ -1,0 +1,26 @@
+doctype html
+html
+  head
+    title Login Page
+    |   
+    link(rel='stylesheet', type='text/css', href='stylesheets/login.css')
+    |   
+    script(src='javascripts/loginScript.js')
+  body
+    .container
+      h1 DID-chain login
+      |     
+      form
+        .form-group
+          label(for='username') Username:
+          |         
+          input#username(type='text', name='username', placeholder='Enter your username')
+        |       
+        .form-group
+          label(for='password') Password:
+          |         
+          input#password(type='password', name='password', placeholder='Enter your password')
+        |       
+        button.login-button(onclick='login()') Login
+        |       
+        a.enroll-button(href='/enroll') enroll
