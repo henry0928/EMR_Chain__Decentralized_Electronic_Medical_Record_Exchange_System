@@ -121,6 +121,13 @@ class IDMContract extends Contract {
              MSP: mspId } ;   
   } // revoke_doc_role()
 
+  async authenticate_role(ctx, p_key, signature, role) {
+    const buffer = await ctx.stub.getState(p_key);
+    if (!buffer || !buffer.length) return { error: "(authenticate_role)USER NOT_FOUND" };
+    let buffer_object = JSON.parse(buffer.toString()) ;
+    // Need to be finish! ( NOT FINISH !)
+  } // authenticate_role
+
   async login(ctx, p_key, signature, message) {
     // 使用公鑰verify
     const verifier = createVerify('rsa-sha256');

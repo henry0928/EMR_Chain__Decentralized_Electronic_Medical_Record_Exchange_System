@@ -114,17 +114,19 @@ class ACLContract extends Contract {
     return { success : "OK (update_hash)" } ; 
   } // update_hash()
 
-  async authorization(ctx, patient_id, patient_did, hospital_did, patient_signature, hospital_signature, request_id) {
-    // patient_did : 病患DID
-    // hospital_did : 想要存取其他health-data的醫院DID
-    // signature : hospital signature
+  async authorization(ctx, patient_id, doctor_p_key, patient_signature, doctor_signature, self_level, request_id) {
+    // patient_id : 病患app_id
+    // doctor_p_key : 想要存取其他醫院health-data的doctor main identity public key
+    // signature : patient and doctor signature
     // request_id : object, hospital_id : hospital_name, 因無法使用array型傳遞 使用object取代
     let result = {} ;// must be a pair with hospital_id -> url ;
 
-    // The patient_did, hospital_did are for digital signature use !!!
+    // The patient_signature, hospital_signature are for digital signature use !!!
+
+    // NOT FINISH! 
+
     // check(patient_signature, patient_did) ; // authentication the singnature from DID chain
     // check(hospital_signature, hospital_did) ; // authentication the singnature from DID chain 
-    let self_level = 3 ;// need to use did chain to verify hospital level
     const buffer = await ctx.stub.getState(patient_id) ;
     if (!buffer || !buffer.length) return { error: "(authorization)Patient NOT_FOUND" };
     const buffer_object = JSON.parse(buffer.toString()) ;
