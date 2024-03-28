@@ -19,9 +19,8 @@ contract IdentityManager {
     }
 
     struct UserInfo {
-        address personalIdentityAddress; // address of access control manager
-        address userAddress;             // binding addrss
-        string  public_key;              // user public key
+        address personalIdentityAddress; // address of access control manager 
+        address userAddress;             // binding addrss, this also is user's public key
     } // Userinfo
 
     struct BindInfo {
@@ -37,13 +36,12 @@ contract IdentityManager {
     mapping(address => bool) RegistAddress ; // Record the regist wallet address
     // mapping(string => string ) private NationalIdList; // the record of NationalId and DID
 
-    function addUser(string memory DID, string memory p_key) external onlyAdmin{
+    function addUser(string memory DID) external onlyAdmin{
         if( !RegistDID[DID] ) {
             RegistDID[DID] = true ;
             UserInfo memory info = UserInfo(
                                         address(0),
-                                        address(0),
-                                        p_key
+                                        address(0)
                                     ) ;
             IdentityInfo[DID] = info ;
         } // if 
