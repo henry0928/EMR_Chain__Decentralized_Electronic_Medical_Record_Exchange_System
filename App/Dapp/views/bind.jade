@@ -1,0 +1,82 @@
+doctype html
+html
+  head
+    title Bind Account
+    link(rel='stylesheet' href='stylesheets/bind.css')
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css')
+    script(src='https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js')
+    //- script(src='https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js')
+  body
+    .container
+      h1 Bind Account
+      form#bindAccountForm(action='/bind', method='POST')
+        label(for='didInput') DID:
+        input#didInput(type='text' name='didInput' required='')
+        br
+        br
+        label(for='walletAddressInput') Wallet Address:
+        input#walletAddressInput(type='text' name='walletAddressInput' readonly='' required='')
+        button#connectWalletButton(type='button')
+          img(src='images/MetaMask_Horizontal.svg', alt='MetaMask Logo')
+          | 
+        br
+        br
+        label(for='userTypeInput') User Type:
+        button#personalButton(type='button') Personal
+        button#organizationButton(type='button') Organization
+        input#userTypeInput(type='text' name='userTypeInput' required='')
+        br
+        br
+        button(type='submit') Bind
+    script.
+      const bindAccountForm = document.getElementById("bindAccountForm");
+      const connectWalletButton = document.getElementById("connectWalletButton");
+      const walletAddressInput = document.getElementById("walletAddressInput");
+      const personalButton = document.getElementById("personalButton");
+      const organizationButton = document.getElementById("organizationButton");
+      const userTypeInput = document.getElementById("userTypeInput");
+
+      // Event listener for the "Connect Wallet" button
+      connectWalletButton.addEventListener("click", async function() {
+        // Code to connect the Metamask wallet and retrieve the wallet address
+        // ...
+        // For demonstration purposes, let's assume the wallet address is retrieved successfully
+        // const walletAddress = "0x1234567890abcdef";
+        walletAddressInput.value = "Ox1234";
+        alert("click connect!");
+        if (window.ethereum) {
+          const web3 = new Web3(window.ethereum);
+          // Request the user to connect accounts (Metamask will prompt)
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+          // Get the connected accounts
+          const accounts = await web3.eth.getAccounts();
+          walletAddressInput.value = accounts[0];
+          //-   // Display the connected account
+          //-   document.getElementById('connectedAccount').innerText = accounts[0];
+        } // if  
+        else {
+          // Alert the user to download Metamask
+          alert('Please download Metamask');
+        } // else 
+      });
+      // Event listeners for the user type buttons
+      personalButton.addEventListener("click", function() {
+      userTypeInput.value = "personal";
+      });
+      organizationButton.addEventListener("click", function() {
+      userTypeInput.value = "organization";
+      });
+      //- bindAccountForm.addEventListener("submit", function(event) {
+      //- event.preventDefault();
+      //- // Get the values from the form inputs
+      //- const did = document.getElementById("didInput").value;
+      //- const walletAddress = document.getElementById("walletAddressInput").value;
+      //- const userType = document.getElementById("userTypeInput").value;
+      //- // Perform any necessary validation or processing here
+      //- // ...
+      //- // Call the backend API to bind the account
+      //- // ...
+      //- // Optionally, show a success message or redirect to another page
+      //- // ...
+      //- });

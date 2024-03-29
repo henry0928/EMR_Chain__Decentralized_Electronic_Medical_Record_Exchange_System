@@ -63,6 +63,16 @@ input[type="password"] {
   border-radius: 5px;
   cursor: pointer;
 }
+.bindaccount-button {
+  display: block;
+  width: 95%;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
 .login-button {
   background-color: #4CAF50;
@@ -84,4 +94,15 @@ input[type="password"] {
 
 .enroll-button:hover {
   background-color: #1e87db;
+}
+
+.bindaccount-button {
+  background-color: #a744a4;
+  color: #fff;
+  border: none;
+  text-decoration: none;
+}
+
+.bindaccount-button:hover {
+  background-color: #a8338e;
 }
