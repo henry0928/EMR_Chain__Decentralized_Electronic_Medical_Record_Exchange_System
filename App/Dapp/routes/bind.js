@@ -43,7 +43,7 @@ router.post('/', (req, res) => {
   <script>
     const address = "${walletAddress}";
     const message = "bindwallet() success";
-    const alertMessage = "hashId: " + address + "\\n" + message;
+    const alertMessage = wallet_address: " + address + "\\n" + message;
     alert(alertMessage);
     window.location.href = '/';
   </script>

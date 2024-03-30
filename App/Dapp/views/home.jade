@@ -1,0 +1,197 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    title Dashboard
+    link(rel='stylesheet' href='stylesheets/home.css')
+    script(src='https://cdn.ethers.io/lib/ethers-5.2.umd.min.js' type='application/javascript')
+    
+    style.
+      /* Custom CSS styles go here */
+  body
+    nav.navbar.is-primary
+      .navbar-brand
+        a.navbar-item(href='/')
+          img(src='logo.png' alt='Home')
+        a.navbar-burger(role='button' aria-label='menu' aria-expanded='false' data-target='navbarMenu')
+          span(aria-hidden='true')
+          span(aria-hidden='true')
+          span(aria-hidden='true')
+      #navbarMenu.navbar-menu
+        .navbar-end
+          button#connectWalletButton(type='button')
+            img(src='images/MetaMask_Horizontal.svg', alt='MetaMask Logo')
+          a.navbar-item.button(href='/enroll') Enroll
+          a.navbar-item.button(href='/bind') Bind Account
+    section.section
+      .container
+        .box
+          h2#user-info User INFO
+            p#message Please connect to you wallet first
+            p#userAddress
+            p#DID
+            p#contractAddress
+            p#userType
+          // Content for Region 1 goes here
+        .box
+          h2.title.is-4 Joined Applications
+          // Content for Region 2 goes here
+        .box
+          h2.title.is-4 Upload and Get App-Chain Private Key
+          // Content for Region 3 goes here
+    script.
+      const connectWalletButton = document.getElementById("connectWalletButton");
+      const userAddressElement = document.getElementById("userAddress");
+      const messageElement = document.getElementById("message");
+      const DIDElement = document.getElementById("DID") ;
+      const contractAddressElement = document.getElementById("contractAddress") ;
+      const userTypeElement = document.getElementById("userType") ;
+      const abi = `[
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "DID",
+              "type": "string"
+            }
+          ],
+          "name": "addUser",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "DID",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "_userAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_userType",
+              "type": "uint256"
+            }
+          ],
+          "name": "bindWallet",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "org_address",
+              "type": "address"
+            }
+          ],
+          "name": "addOrg",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address"
+            }
+          ],
+          "name": "getAccessManagerAddress",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true
+        },
+        {
+          "inputs": [],
+          "name": "getId",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true
+        },
+        {
+          "inputs": [],
+          "name": "getUserType",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true
+        }
+      ]` ;
+      // Event listener for the "Connect Wallet" button
+      connectWalletButton.addEventListener("click", async function() {
+        alert("click connect!");
+        if (window.ethereum) {
+          const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
+          // const IdentityManagerAbi = readAbi("IdentityManager") ;
+          // A Web3Provider wraps a standard Web3 provider, which is
+          // what MetaMask injects as window.ethereum into each page
+          const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+
+          // MetaMask requires requesting permission to connect users accounts
+          await provider.send("eth_requestAccounts", []);
+
+          // The MetaMask plugin also allows signing transactions to
+          // send ether and pay to change state within the blockchain.
+          // For this, you need the account signer...
+          const signer = provider.getSigner() ;
+          const userAddress = await signer.getAddress() ;
+          userAddressElement.textContent = "User Address: " + userAddress;
+          messageElement.textContent = "Welcome!";
+          const contract = new ethers.Contract(contractAddress, abi, provider);
+          var did ;
+          var contract_addr ;
+          let utype ;
+          try {
+            did = await contract.getId(); 
+            contract_addr = await contract.getAccessManagerAddress(userAddress);
+            //- utype = await contract.getUserType();
+          } // try 
+          catch (error) {
+            alert(error) ;
+          } // catch
+          
+          DIDElement.textContent = "DID:" + did ;
+          contractAddressElement.textContent = "contract_addr:" + contract_addr ;
+          //- if ( utype === 0 )
+          //-   userTypeElement.textContent = "personal" ;
+          //- else 
+          //-   userTypeElement.textContent = "organization" ;
+          
+        } // if 
+        else 
+          alert('Please download Metamask');
+      });

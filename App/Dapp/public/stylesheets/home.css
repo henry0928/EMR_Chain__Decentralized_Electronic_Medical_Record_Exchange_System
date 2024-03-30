@@ -1,0 +1,102 @@
+/* Custom CSS styles for the page */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #413f3f;
+    margin: 0;
+    padding: 20px;
+  }
+
+/* Navbar styles */
+.navbar {
+    background-color: #7632dc;
+    color: #fff;
+  }
+  
+  .navbar-item {
+    color: #fff;
+  }
+  
+  .navbar-item.button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background-color: #936ad1;
+    color: #fff;
+  }
+  
+  .navbar-end {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  
+  /* Styles for navbar-start class */
+  .navbar-start {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-start > *,
+  .navbar-end > * {
+    align-self: stretch;
+  }
+
+  .navbar-item + .navbar-item {
+    margin-left: 10px; /* Adjust the value to increase or decrease the space */
+  }
+
+  #connectWalletButton + .navbar-item {
+    margin-left: 10px; /* Adjust the value to increase or decrease the space */
+  }
+  
+  #connectWalletButton {
+    background-color: #fac72f; /* orange color */
+    width: 5%;
+  }
+
+  /* Box styles */
+  .box {
+    margin-bottom: 1.5rem;
+    border-radius: 5px;
+    border: 1px solid #dbdbdb;
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+  }
+  
+  .box h2.title {
+    margin-bottom: 1rem;
+  }
+  
+  /* Region 1 styles */
+  #region1 {
+    background-color: #fff;
+  }
+  
+  /* Region 2 styles */
+  #region2 {
+    background-color: #f8f8f8;
+  }
+  
+  /* Region 3 styles */
+  #region3 {
+    background-color: #f2f2f2;
+  }
+
+  #user-info {
+    /* Styles for the User INFO section */
+    background-color: #f2f2f2;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  #message,
+  #userAddress,
+  #DID,
+  #contractAddress,
+  #userType {
+    width: 50%;
+    font-style: italic;
+    color: #999;
+  }
+  
+  /* Customize other elements and add more styles as needed */
+  
