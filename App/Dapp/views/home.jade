@@ -6,7 +6,7 @@ html
     title Dashboard
     link(rel='stylesheet' href='stylesheets/home.css')
     script(src='https://cdn.ethers.io/lib/ethers-5.2.umd.min.js' type='application/javascript')
-    
+    script(src='javascripts/abiScripts.js')
     style.
       /* Custom CSS styles go here */
   body
@@ -35,10 +35,44 @@ html
             p#userType
           // Content for Region 1 goes here
         .box
-          h2.title.is-4 Joined Applications
+          h2.title.is-4 Upload and Get App-Chain Private Key
+          .input-container
+            label(for='contractAddressInput') Your Contract Address:
+            p#contractAddressInput
+          .input-container
+            label(for='EncryptionPublicKey') Encryption PublicKey:
+            p#EncryptionPublicKeyInput
+            button#getPubkeyButton.primary(type='button') Get EncryptionPublicKey
+          br
+          .input-container
+            label(for='s_privateKeyInput') Upload Encrypted App-Chain Private Key:
+            input#s_privateKeyInput(type='text' size='10' placeholder='Enter Encrypted App-Chain Private Key')
+            select#setAppOption(name='App')
+              option(value='' selected='') Choose the Application
+              option(value='OpenBanking') OpenBanking
+              option(value='E_profile') E-profle
+              option(value='EMR_sharing') EMR-Sharing
+              option(value='DNA_sequence') DNA-Sequence
+            button#uploadPrikeyButton.primary(type='button') Upload
+          br
+          .input-container
+            label(for='g_privateKey_p') Get Encrypted App-Chain Private Key:
+            p#g_privateKey_p
+            p#decrypt_g_privateKey_p
+            select#getAppOption(name='App')
+              option(value='' selected='') Choose the Application
+              option(value='OpenBanking') OpenBanking
+              option(value='E_profile') E-profle
+              option(value='EMR_sharing') EMR-Sharing
+              option(value='DNA_sequence') DNA-Sequence
+            button#getPrikeyButton.primary(type='button') Get Encrypted Private Key
+            button#decryptPrikeyButton.primary(type='button') Decrypted
+          //- p
+          //-   label(for='privateKeyInput') Upload App-Chain Private Key:
+          //-   input#privateKeyInput(type='text' placeholder='Enter privateKey')
           // Content for Region 2 goes here
         .box
-          h2.title.is-4 Upload and Get App-Chain Private Key
+          h2.title.is-4 Joined Applications
           // Content for Region 3 goes here
     script.
       const connectWalletButton = document.getElementById("connectWalletButton");
@@ -47,113 +81,33 @@ html
       const DIDElement = document.getElementById("DID") ;
       const contractAddressElement = document.getElementById("contractAddress") ;
       const userTypeElement = document.getElementById("userType") ;
-      const abi = `[
-        {
-          "inputs": [],
-          "stateMutability": "nonpayable",
-          "type": "constructor"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "string",
-              "name": "DID",
-              "type": "string"
-            }
-          ],
-          "name": "addUser",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "string",
-              "name": "DID",
-              "type": "string"
-            },
-            {
-              "internalType": "address",
-              "name": "_userAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_userType",
-              "type": "uint256"
-            }
-          ],
-          "name": "bindWallet",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "org_address",
-              "type": "address"
-            }
-          ],
-          "name": "addOrg",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "userAddress",
-              "type": "address"
-            }
-          ],
-          "name": "getAccessManagerAddress",
-          "outputs": [
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true
-        },
-        {
-          "inputs": [],
-          "name": "getId",
-          "outputs": [
-            {
-              "internalType": "string",
-              "name": "",
-              "type": "string"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true
-        },
-        {
-          "inputs": [],
-          "name": "getUserType",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true
-        }
-      ]` ;
+      const contractAddressInputElement = document.getElementById("contractAddressInput") ;
+      const EncryptionPublicKeyInputElement = document.getElementById("EncryptionPublicKeyInput") ;
+      const s_privateKeyInputElement = document.getElementById("s_privateKeyInput") ;
+      const g_privateKey_pElement = document.getElementById("g_privateKey_p") ;
+      const decrypt_g_privateKey_pElement = document.getElementById("decrypt_g_privateKey_p") ;
+      const setAppOptionSelect = document.getElementById("setAppOption") ;
+      const getAppOptionSelect = document.getElementById("getAppOption") ;
+      let s_App_option ;
+      let g_App_option ;
+      let set_private ;
+      document.addEventListener('DOMContentLoaded', function() {
+        setAppOptionSelect.selectedIndex = 0;
+        getAppOptionSelect.selectedIndex = 0;
+        s_privateKeyInputElement.value = "";
+      });
+      s_privateKeyInputElement.addEventListener('input', (event) => {
+        set_private = event.target.value;
+      });
+      setAppOptionSelect.addEventListener('change', (event) => {
+        s_App_option = event.target.value;
+      });
+      getAppOptionSelect.addEventListener('change', (event) => {
+        g_App_option = event.target.value;
+      });
       // Event listener for the "Connect Wallet" button
       connectWalletButton.addEventListener("click", async function() {
-        alert("click connect!");
+        //- alert("click connect!");
         if (window.ethereum) {
           const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
           // const IdentityManagerAbi = readAbi("IdentityManager") ;
@@ -171,27 +125,98 @@ html
           const userAddress = await signer.getAddress() ;
           userAddressElement.textContent = "User Address: " + userAddress;
           messageElement.textContent = "Welcome!";
-          const contract = new ethers.Contract(contractAddress, abi, provider);
+          const contract = new ethers.Contract(contractAddress, IdentityManagerAbi, signer);
           var did ;
           var contract_addr ;
           let utype ;
           try {
             did = await contract.getId(); 
             contract_addr = await contract.getAccessManagerAddress(userAddress);
-            //- utype = await contract.getUserType();
+            utype = await contract.getUserType();
           } // try 
           catch (error) {
             alert(error) ;
           } // catch
           
-          DIDElement.textContent = "DID:" + did ;
-          contractAddressElement.textContent = "contract_addr:" + contract_addr ;
-          //- if ( utype === 0 )
-          //-   userTypeElement.textContent = "personal" ;
-          //- else 
-          //-   userTypeElement.textContent = "organization" ;
+          DIDElement.textContent = "DID: " + did ;
+          contractAddressElement.textContent = "contract_addr: " + contract_addr ;
+          contractAddressInputElement.textContent = contract_addr ;
+          if ( utype == 0 )
+            userTypeElement.textContent = "UserType: personal" ;
+          else 
+            userTypeElement.textContent = "UserType: organization" ;
           
         } // if 
         else 
           alert('Please download Metamask');
+      });
+      getPubkeyButton.addEventListener("click", async function() {
+        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner() ;
+        const userAddress = await signer.getAddress() ;
+        const Pubkey = await window.ethereum.request({
+          "method": "eth_getEncryptionPublicKey",
+          "params": [
+            userAddress
+          ]
+        });
+        EncryptionPublicKeyInputElement.textContent = Pubkey ;
+      });
+
+      uploadPrikeyButton.addEventListener("click", async function() {
+        const contractAddress = contractAddressInputElement.textContent;
+        alert(contractAddress) ;
+        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner() ;
+        const userAddress = await signer.getAddress() ;
+        const contract = new ethers.Contract(contractAddress, PersonalIdentityAbi, signer);
+        try {
+          if (s_App_option && set_private)
+            await contract.set_app_private(s_App_option, set_private) ;
+          else 
+            alert("Please choose the Application or upload the privateKey!!!") ;
+        } // try 
+        catch (error) {
+          alert(error) ;
+        } // catch
+      });
+
+      getPrikeyButton.addEventListener("click", async function() {
+        const contractAddress = contractAddressInputElement.textContent;
+        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner() ;
+        const userAddress = await signer.getAddress() ;
+        const contract = new ethers.Contract(contractAddress, PersonalIdentityAbi, signer);
+        let key ;
+        try {
+          if (g_App_option)
+            key = await contract.get_app_private(g_App_option) ;
+          else 
+            alert("Please choose the Application !!!") ;
+        } // try 
+        catch (error) {
+          alert(error) ;
+        } // catch
+        g_privateKey_pElement.textContent = "EncryptedKey: " + key ;
+        
+      });
+
+      decryptPrikeyButton.addEventListener("click", async function() {
+        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        const signer = provider.getSigner() ;
+        const userAddress = await signer.getAddress() ;
+        let key ;
+        alert(g_privateKey_pElement.textContent) ;
+        key = await window.ethereum.request({
+          "method": "eth_decrypt",
+          "params": [
+            g_privateKey_pElement.textContent,
+            userAddress
+          ]
+        });    
+        alert(key) ;
+        //- decrypt_g_privateKey_pElement.textContent = "Key: " + key ;  
       });

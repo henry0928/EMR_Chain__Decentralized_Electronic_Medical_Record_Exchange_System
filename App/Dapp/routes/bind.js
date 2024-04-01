@@ -15,20 +15,24 @@ async function bindwallet(_DID, _address, _usertype) {
   const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
   const IdentityManagerAbi = readAbi("IdentityManager") ;
   const contract = new ethers.Contract(contractAddress, IdentityManagerAbi, wallet);
+
   // Call the contract function
   try {
-    await contract.bindWallet(_DID, _address, _usertype); // Update with your function name and arguments if applicable    
+    await contract.bindWallet(_DID, _address, _usertype);
+    await contract.authentication(_DID, "OpenBanking"); // just for testing function, Normally it will execute when org authenicate user
+    await contract.authentication(_DID, "EMR Sharing");
   } // try 
   catch (error) {
     console.error("Error calling function:", error) ;
   } // catch
+
 } // bindwallet()
 
 router.get('/', function(req, res, next) {
   res.render('bind', { title: 'Express' });
 });
 
-router.post('/', (req, res) => {
+router.post('/', async(req, res) => {
   const DID = req.body.didInput ;
   const walletAddress = req.body.walletAddressInput ;
   const userType = req.body.userTypeInput ;
@@ -37,13 +41,17 @@ router.post('/', (req, res) => {
     typeNum = 0 ;
   else 
     typeNum = 1 ;
-  bindwallet(DID, walletAddress, typeNum) ; 
+  // const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
+  // const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
+  // const IdentityManagerAbi = readAbi("IdentityManager") ;
+  // const contract = new ethers.Contract(contractAddress, IdentityManagerAbi, provider);
+  bindwallet(DID, walletAddress, Number(typeNum)) ; 
   // Show pop-up with hashId and redirect to root page
   const script = `
   <script>
-    const address = "${walletAddress}";
+    const w_address = "${walletAddress}";
     const message = "bindwallet() success";
-    const alertMessage = wallet_address: " + address + "\\n" + message;
+    const alertMessage = " wallet_address: " + w_address + "\\n" + message;
     alert(alertMessage);
     window.location.href = '/';
   </script>

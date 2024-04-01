@@ -18,6 +18,8 @@ contract IdentityManager {
         _; 
     }
 
+    event ContractCreate(address indexed contractAddress);
+
     struct UserInfo {
         address personalIdentityAddress; // address of access control manager 
         address userAddress;             // binding addrss, this also is user's public key
@@ -48,7 +50,7 @@ contract IdentityManager {
         
     } // addUser()
 
-    function bindWallet(string memory DID, address _userAddress, uint _userType) external onlyAdmin{
+    function bindWallet(string memory DID, address _userAddress, uint _userType) external onlyAdmin {
       require(RegistDID[DID] == true, "DID was not resgist!!") ; // DID need to be register first
       require(RegistAddress[_userAddress] == false, "The userAddress was bound before!!") ; // _userAddress can not be bound before
       require(IdentityInfo[DID].userAddress == address(0), "DID already bound!!") ; // bound DID can not bind again
@@ -59,6 +61,7 @@ contract IdentityManager {
       // create contract and transfer ownership to user himself
       PersonalIdentity personalIdentity = new PersonalIdentity() ;
       personalIdentity.transferOwnership(_userAddress) ;
+      emit ContractCreate(address(personalIdentity));
         
       // update user info
       IdentityInfo[DID].personalIdentityAddress = address(personalIdentity) ;
@@ -73,6 +76,11 @@ contract IdentityManager {
     // function checkDID(string calldata id) external onlyOrg returns(string memory) {
       
     // } // getDID 
+
+    function authentication(string calldata DID, string calldata app) external onlyOrg {
+      address addr = IdentityInfo[DID].personalIdentityAddress ;
+      PersonalIdentity(addr).set_app(app);
+    } // authentication() // NEED TO BE FINISH!!!!!
 
     function getAccessManagerAddress(address userAddress) external view returns (address) {
         return IdentityInfo[BindingInfo[userAddress].DID].personalIdentityAddress ;

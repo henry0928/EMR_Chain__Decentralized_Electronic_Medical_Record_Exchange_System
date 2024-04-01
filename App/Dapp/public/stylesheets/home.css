@@ -50,7 +50,7 @@ body {
   
   #connectWalletButton {
     background-color: #fac72f; /* orange color */
-    width: 5%;
+    width: 7%;
   }
 
   /* Box styles */
@@ -64,6 +64,46 @@ body {
   
   .box h2.title {
     margin-bottom: 1rem;
+  }
+
+  input[type="text"],
+  input[type="hidden"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    margin-bottom: 10px;
+  }
+
+    /* Custom Button Styles */
+  button[type="button"] {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+
+  button[type="button"].primary {
+    background-color: #dc64fa;
+    color: #fff;
+  }
+
+  button[type="button"].primary:hover {
+    background-color: #a849bf;
+  }
+
+  button[type="button"].secondary {
+    background-color: #6c757d;
+    color: #fff;
+  }
+
+  button[type="button"].secondary:hover {
+    background-color: #555e66;
   }
   
   /* Region 1 styles */
