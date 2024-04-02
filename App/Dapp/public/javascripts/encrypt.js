@@ -21,4 +21,10 @@ const buf = Buffer.from(
 // const encryptedValue = buf.toString();
 
 // console.log(`0x${Buffer.from(JSON.stringify(buf), 'utf8').toString('hex')}`);
-console.log(`0x${buf}`);
+// console.log(`0x${buf}`);
+console.log(buf) ;
+console.log(JSON.stringify(
+  sigUtil.encrypt(
+    { publicKey: p_key, data: data, version: 'x25519-xsalsa20-poly1305' },
+  )
+));

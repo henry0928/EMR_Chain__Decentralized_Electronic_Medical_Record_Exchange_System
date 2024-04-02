@@ -38,6 +38,7 @@ router.post('/', function(req, res, next) {
   console.log(email);
   console.log(nationalid); 
   hashId = crypto.createHash("sha256").update(nationalid).digest("hex") ; // To make the DID
+  console.log(hashId);
   adduser(hashId) ;
   // Show pop-up with hashId and redirect to root page
   const script = `
