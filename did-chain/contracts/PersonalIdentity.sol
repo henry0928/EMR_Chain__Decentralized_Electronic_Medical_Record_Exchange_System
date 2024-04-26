@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <=0.8.19;
+pragma solidity >=0.4.22 <=0.8.20;
 
 contract PersonalIdentity {
     // reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol

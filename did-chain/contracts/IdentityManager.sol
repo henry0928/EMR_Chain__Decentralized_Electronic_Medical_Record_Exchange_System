@@ -1,9 +1,16 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <=0.8.19;
+// pragma solidity >=0.4.22 <=0.8.20;
+pragma solidity ^0.8.0;
 import "./PersonalIdentity.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+// import "@openzeppelin/contracts/utils/Address.sol";
+// import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 pragma experimental ABIEncoderV2;
 
 contract IdentityManager {
+    using ECDSA for bytes32;
+    // using Address for address;
+    // using MessageHashUtils for bytes32;
     constructor() {
         admin = msg.sender ;
         Orgs[admin] = true ;
@@ -73,14 +80,20 @@ contract IdentityManager {
       Orgs[org_address] = true ; 
     } // addOrg()
 
-    // function checkDID(string calldata id) external onlyOrg returns(string memory) {
-      
-    // } // getDID 
-
-    function authentication(string calldata DID, string calldata app) external onlyOrg {
-      address addr = IdentityInfo[DID].personalIdentityAddress ;
-      PersonalIdentity(addr).set_app(app);
-    } // authentication() // NEED TO BE FINISH!!!!!
+    function authentication(string calldata DID, 
+                            bytes memory messageHash,
+                            bytes memory signature) external view returns(bool) {
+      address expectedSigner = IdentityInfo[DID].userAddress ;
+      bytes32 ethSignedMessageHash = keccak256(
+        abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
+      );
+      bool res = ECDSA.recover(ethSignedMessageHash, signature) == expectedSigner;
+    //   if (res) {
+    //     address addr = IdentityInfo[DID].personalIdentityAddress ;
+    //     PersonalIdentity(addr).set_app(app);
+    //   } // if 
+      return res ;
+    } // authentication()
 
     function getAccessManagerAddress(address userAddress) external view returns (address) {
         return IdentityInfo[BindingInfo[userAddress].DID].personalIdentityAddress ;

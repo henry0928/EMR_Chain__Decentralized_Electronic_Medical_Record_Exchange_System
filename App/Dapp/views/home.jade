@@ -26,14 +26,6 @@ html
           a.navbar-item.button(href='/bind') Bind Account
     section.section
       .container
-        //- .box
-        //-   h2#user-info User INFO
-        //-     p#message Please connect to you wallet first
-        //-     p#userAddress
-        //-     p#DID
-        //-     p#contractAddress
-        //-     p#userType
-        //-   // Content for Region 1 goes here
         .user-info-box
           h2.user-info-title User Information
           p.user-info-message Please connect to your wallet to proceed.
@@ -50,7 +42,7 @@ html
             p.user-info-item
               span.user-info-label User Type:
               span#userType Standard User
-        .box
+        .user-info-box
           h2.title.is-4 Upload and Get App-Chain Private Key
           .input-container
             p.user-info-item
@@ -84,14 +76,21 @@ html
               option(value='EMR_sharing') EMR-Sharing
               option(value='DNA_sequence') DNA-Sequence
             button#getPrikeyButton.primary(type='button') Get Encrypted Private Key
+            | &nbsp; &nbsp; &nbsp;
             button#decryptPrikeyButton.primary(type='button') Decrypted
-          //- p
-          //-   label(for='privateKeyInput') Upload App-Chain Private Key:
-          //-   input#privateKeyInput(type='text' placeholder='Enter privateKey')
-          // Content for Region 2 goes here
-        .box
-          h2.title.is-4 Joined Applications
-          // Content for Region 3 goes here
+        .user-info-box
+          h2.user-info-title Join Application
+          p.user-info-message Join the Application by verify Main Identity
+          p.user-info-item
+            span.user-info-label Choose the Application
+          button#OBButton.primary(type='button') OpenBanking
+          | &nbsp; &nbsp; &nbsp;
+          button#EPButton.primary(type='button') E-profle
+          | &nbsp; &nbsp; &nbsp;
+          button#EMRButton.primary(type='button') EMR-Sharing
+          | &nbsp; &nbsp; &nbsp;
+          button#DNAButton.primary(type='button') DNA-Sequence
+
     script.
       const connectWalletButton = document.getElementById("connectWalletButton");
       const userAddressElement = document.getElementById("userAddress");
@@ -105,12 +104,31 @@ html
       const decrypt_g_privateKey_pElement = document.getElementById("decrypt_g_privateKey_p") ;
       const setAppOptionSelect = document.getElementById("setAppOption") ;
       const getAppOptionSelect = document.getElementById("getAppOption") ;
+      const joinAppOptionSelect = document.getElementById("joinAppOption") ;
+      const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
       let s_App_option ;
       let g_App_option ;
+      let j_App_option ;
       let set_private ;
+
+      function stringToHexUTF8(input) {
+        const utf8Encoder = new TextEncoder();
+        const encoded = utf8Encoder.encode(input);
+        let hexString = '';
+        for (let i = 0; i < encoded.length; i++) {
+            let hexByte = encoded[i].toString(16);
+            if (hexByte.length === 1) {
+                hexByte = '0' + hexByte; // Pad single digit hex values with a leading zero
+            } // if 
+            hexString += hexByte;
+        } // for
+        return hexString;
+      } // function
+
       document.addEventListener('DOMContentLoaded', function() {
         setAppOptionSelect.selectedIndex = 0;
         getAppOptionSelect.selectedIndex = 0;
+        //- joinAppOptionSelect.selectedIndex = 0;
         s_privateKeyInputElement.value = "";
       });
       s_privateKeyInputElement.addEventListener('input', (event) => {
@@ -122,11 +140,14 @@ html
       getAppOptionSelect.addEventListener('change', (event) => {
         g_App_option = event.target.value;
       });
+      //- joinAppOptionSelect.addEventListener('change', (event) => {
+      //-   j_App_option = event.target.value;
+      //- });
       // Event listener for the "Connect Wallet" button
       connectWalletButton.addEventListener("click", async function() {
         //- alert("click connect!");
         if (window.ethereum) {
-          const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
+          // const contractAddress = '0x19550457F532A47f8B64e1246563e9013DF20260'; // Update with your contract address
           // const IdentityManagerAbi = readAbi("IdentityManager") ;
           // A Web3Provider wraps a standard Web3 provider, which is
           // what MetaMask injects as window.ethereum into each page
@@ -141,7 +162,7 @@ html
           const signer = provider.getSigner() ;
           const userAddress = await signer.getAddress() ;
           userAddressElement.textContent = userAddress;
-          const contract = new ethers.Contract(contractAddress, IdentityManagerAbi, signer);
+          const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
           var did ;
           var contract_addr ;
           let utype ;
@@ -182,7 +203,6 @@ html
 
       uploadPrikeyButton.addEventListener("click", async function() {
         const contractAddress = contractAddressInputElement.textContent;
-        alert(contractAddress) ;
         const provider = new ethers.providers.Web3Provider(window.ethereum) ;
         await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner() ;
@@ -222,19 +242,71 @@ html
 
       decryptPrikeyButton.addEventListener("click", async function() {
         const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner() ;
         const userAddress = await signer.getAddress() ;
         let key ;
         let privateKey = g_privateKey_pElement.textContent ;
         privateKey = "0x" + privateKey.toString('hex');
         alert(privateKey) ;
-        key = await window.ethereum.request({
+        key = await provider.send({
           "method": "eth_decrypt",
           "params": [
             privateKey,
             userAddress
           ]
-        });    
+        });
         alert(key) ;
         //- decrypt_g_privateKey_pElement.textContent = "Key: " + key ;  
       });
+
+      OBButton.addEventListener("click", async function() {
+        window.location.href = '/Openbanking' ;
+      });
+
+      EPButton.addEventListener("click", async function() {
+        window.location.href = '/E_profile' ;
+      });
+
+      EMRButton.addEventListener("click", async function() {
+        //- window.location.href = '/EMR_sharing' ;
+        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        const signer = provider.getSigner() ;
+        const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+        const messageHash = ethers.utils.hashMessage("henry") ;
+        signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+        let info ;
+        const DID = DIDElement.textContent ;
+        alert("start auth");
+        try {
+          info = await contract.authentication(DID, messageHash, signature); 
+        } // try 
+        catch (error) {
+          alert(error) ;
+        } // catch
+
+        alert(info) ;
+      });
+
+      DNAButton.addEventListener("click", async function() {
+        window.location.href = '/DNA_sequence' ;
+      });   
+
+      //- RequestButton.addEventListener("click", async function() {
+      //-   const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+      //-   const signer = provider.getSigner() ;
+      //-   const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+      //-   const messageHash = ethers.utils.hashMessage("henry") ;
+      //-   signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+      //-   let info ;
+      //-   const DID = DIDElement.textContent ;
+      //-   alert("start auth");
+      //-   try {
+      //-     info = await contract.authentication(DID, j_App_option, messageHash, signature); 
+      //-   } // try 
+      //-   catch (error) {
+      //-     alert(error) ;
+      //-   } // catch
+
+      //-   alert(info) ;
+      //- });

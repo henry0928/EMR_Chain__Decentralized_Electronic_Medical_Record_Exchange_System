@@ -12,15 +12,15 @@ async function bindwallet(_DID, _address, _usertype) {
   const wallet = new ethers.Wallet(privateKey, provider);
 
   // Set up the contract instance
-  const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
+  const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; 
   const IdentityManagerAbi = readAbi("IdentityManager") ;
   const contract = new ethers.Contract(contractAddress, IdentityManagerAbi, wallet);
 
   // Call the contract function
   try {
     await contract.bindWallet(_DID, _address, _usertype);
-    await contract.authentication(_DID, "OpenBanking"); // just for testing function, Normally it will execute when org authenicate user
-    await contract.authentication(_DID, "EMR Sharing");
+    // await contract.authentication(_DID, "OpenBanking"); // just for testing function, Normally it will execute when org authenicate user
+    // await contract.authentication(_DID, "EMR Sharing");
   } // try 
   catch (error) {
     console.error("Error calling function:", error) ;

@@ -14,7 +14,7 @@ async function adduser(_hashId) {
   const wallet = new ethers.Wallet(privateKey, provider);
 
   // Set up the contract instance
-  const contractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // Update with your contract address
+  const contractAddress = "0xE6042703475D0dd1bC2eB564a55F1832c2527171";
   const IdentityManagerAbi = readAbi("IdentityManager") ;
   const contract = new ethers.Contract(contractAddress, IdentityManagerAbi, wallet);
   // Call the contract function
