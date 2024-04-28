@@ -1,0 +1,77 @@
+doctype html
+html
+  head
+    title Create App-chain Identity
+    link(rel='stylesheet' href='stylesheets/createIdentity.css')
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css')
+    script(src='https://cdn.ethers.io/lib/ethers-5.2.umd.min.js' type='application/javascript')
+    script(src='javascripts/abiScripts.js')
+  body
+    .container
+      h1 Create App-chain Identity
+      form#bindAccountForm(action='/createIdentity', method='POST')
+        label(for='walletAddressInput') Wallet Address:
+        input#walletAddressInput(type='text' name='walletAddressInput' readonly='' required='')
+        br
+        label(for='DIDInput') DID:
+        input#DIDInput(type='text' name='DIDInput' readonly='' required='')
+        button#connectButton(type='button') Login for sign signature
+          img(src='images/MetaMask_Horizontal.svg', alt='MetaMask Logo')
+          | 
+        br
+        br
+        label(for='messageInput') message(need to input by user):
+        input#messageInput(type='text' name='messageInput' required='')
+        button#SignButton(type='button') Sign
+        br
+        br
+        label(for='messageHashInput') messageHash:
+        input#messageHashInput(type='text' name='messageHashInput' readonly='' required='')
+        br
+        label(for='signatureInput') Signature:
+        input#signatureInput(type='text' name='signatureInput' readonly='' required='')
+        button(type='submit') Create Identity
+    script.
+      const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
+      const connectButton = document.getElementById("connectButton");
+      const walletAddressInput = document.getElementById("walletAddressInput");
+      const DIDInput = document.getElementById("DIDInput");
+      const messageInput = document.getElementById("messageInput");
+      const messageHashInput = document.getElementById("messageHashInput");
+      const signatureInput = document.getElementById("signatureInput");
+      connectButton.addEventListener("click", async function() {
+        if (window.ethereum) {
+          const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+          await provider.send("eth_requestAccounts", []);
+          const signer = provider.getSigner() ;
+          const userAddress = await signer.getAddress() ;
+          walletAddressInput.value = userAddress;
+          const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+          try {
+            DIDInput.value = await contract.getId(); 
+          } // try 
+          catch (error) {
+            alert(error) ;
+          } // catch
+        } // if 
+        else 
+          alert('Please download Metamask');
+      });
+
+      SignButton.addEventListener("click", async function() {
+        if (window.ethereum) {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+          if (messageInput.value) {
+            const messageHash = ethers.utils.hashMessage(messageInput.value);
+            const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+            messageHashInput.value = messageHash;
+            signatureInput.value = signature;
+          } // if
+          else 
+            alert("Need to input the message!!!");
+        } // if 
+        else 
+          alert('Please download Metamask');
+      });

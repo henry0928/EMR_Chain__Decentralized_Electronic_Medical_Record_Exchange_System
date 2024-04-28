@@ -6,9 +6,10 @@ var logger = require('morgan');
 
 var homeRouter = require('./routes/home');
 var enrollRouter = require('./routes/enroll');
-var usersRouter = require('./routes/users');
+// var usersRouter = require('./routes/users');
 var bindRouter = require('./routes/bind');
-// var testRouter = require('./routes/test');
+var EMRsharingRouter = require('./routes/EMRsharing');
+var createIdentityRouter = require('./routes/createIdentity');
 
 var app = express();
 
@@ -24,9 +25,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', homeRouter);
 app.use('/enroll', enrollRouter);
-app.use('/users', usersRouter);
+// app.use('/users', usersRouter);
 app.use('/bind', bindRouter);
-// app.use('/test', testRouter);
+app.use('/EMRsharing', EMRsharingRouter);
+app.use('/createIdentity', createIdentityRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

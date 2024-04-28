@@ -140,9 +140,6 @@ html
       getAppOptionSelect.addEventListener('change', (event) => {
         g_App_option = event.target.value;
       });
-      //- joinAppOptionSelect.addEventListener('change', (event) => {
-      //-   j_App_option = event.target.value;
-      //- });
       // Event listener for the "Connect Wallet" button
       connectWalletButton.addEventListener("click", async function() {
         //- alert("click connect!");
@@ -269,23 +266,23 @@ html
       });
 
       EMRButton.addEventListener("click", async function() {
-        //- window.location.href = '/EMR_sharing' ;
-        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
-        const signer = provider.getSigner() ;
-        const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
-        const messageHash = ethers.utils.hashMessage("henry") ;
-        signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
-        let info ;
-        const DID = DIDElement.textContent ;
-        alert("start auth");
-        try {
-          info = await contract.authentication(DID, messageHash, signature); 
-        } // try 
-        catch (error) {
-          alert(error) ;
-        } // catch
+        window.location.href = '/EMRsharing' ;
+        //- const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+        //- const signer = provider.getSigner() ;
+        //- const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+        //- const messageHash = ethers.utils.hashMessage("henry") ;
+        //- signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+        //- let info ;
+        //- const DID = DIDElement.textContent ;
+        //- alert("start auth");
+        //- try {
+        //-   info = await contract.authentication(DID, messageHash, signature); 
+        //- } // try 
+        //- catch (error) {
+        //-   alert(error) ;
+        //- } // catch
 
-        alert(info) ;
+        //- alert(info) ;
       });
 
       DNAButton.addEventListener("click", async function() {

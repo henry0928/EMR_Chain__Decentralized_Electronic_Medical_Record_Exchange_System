@@ -1,0 +1,23 @@
+doctype html
+html
+  head
+    title EMR-sharing Dashboard
+    link(rel='stylesheet', href='stylesheets/EMRsharing.css')
+  body
+    header
+      nav
+        ul
+          li.home
+            a(href='/EMRsharing') EMR-sharing
+          li.link(style='float:right')
+            a(href='/createIdentity') Create Identity
+          li.link(style='float:right')
+            a(href='/link2') login
+          li.link(style='float:right')
+            a(href='/link3') User module
+    main
+      .dashboard
+        - for (var i = 0; i < 7; i++)
+          .container 
+            h2 Container #{i+1}
+            p This is some sample text for Container #{i+1}.
