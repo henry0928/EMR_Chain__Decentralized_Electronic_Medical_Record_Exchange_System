@@ -15,8 +15,8 @@ class IDMContract extends Contract {
     const commit_id = ctx.clientIdentity.getAttributeValue("user_id") ;
     const msp_id = ctx.clientIdentity.getMSPID() ;
     if ( input["fcn"] === "create_identity" ) { // Only supervisor can create identity
-      if ( commit_id != "supervisor" ) {
-        const log = "Only supervisor can create the instance ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
+      if ( commit_id != "ADMIN" || msp_id != "Org1MSP" ) {
+        const log = "Only ADMIN can create the Identity ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;   
       } // if 
     } // if
