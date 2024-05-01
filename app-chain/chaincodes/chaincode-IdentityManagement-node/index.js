@@ -42,7 +42,7 @@ class IDMContract extends Contract {
     return buffer_object;
   } // for testing the ledger 
   
-  async create_identity(ctx, p_key, app_id, did, x509) {
+  async create_identity(ctx, p_key, app_id, did, x509Cipher) {
     const buffer = await ctx.stub.getState(p_key);
     if ( buffer.length ) return { error: "(create_identity)DID EXIST" };;  
 
@@ -58,7 +58,7 @@ class IDMContract extends Contract {
       AppId : app_id,
       Role : "patient",
       DID : did,
-      x509Identity : x509
+      x509IdentityCipher : x509Cipher
     } ;
     
     await ctx.stub.putState(p_key, Buffer.from(JSON.stringify(value)));

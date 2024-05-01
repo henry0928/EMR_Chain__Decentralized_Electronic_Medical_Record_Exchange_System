@@ -1,11 +1,15 @@
 var express = require('express');
 const readAbi = require("../public/javascripts/readcontractABI");
+const privateKeyGen = require("../public/javascripts/16privateKeyGen");
 const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require('fabric-ca-client');
 const path = require('path');
+const fs = require('node:fs');
 const { buildCAClient, registerAndEnrollUser, enrollAdmin} = require('../../../app-chain/app/CAUtil.js');
 const { buildCCPOrg1, buildWallet } = require('../../../app-chain/app/AppUtil.js');
 const { ethers } = require('ethers');
+const AES = require("crypto-js/aes") ;
+const encUtf8 = require('crypto-js/enc-utf8');
 var router = express.Router();
 
 const channelName = process.env.CHANNEL_NAME || 'my-channel1';
@@ -43,15 +47,27 @@ async function verify(_DID, _messageHash, _signature) {
 } // verify()
 
 async function createIdentity(publicKey, did) {
-  const x509 = "0000" ;
-  const app_id = "1111" ;
   let info ;
   try {
+    const app_id = Date.now().toString() ; // tine use for App-chain id
     const ccp = buildCCPOrg1();
 		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
 		const wallet = await buildWallet(Wallets, walletPath);
 		await enrollAdmin(caClient, wallet, mspOrg1);
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, adminID); // Enroll the ADMIN
+    await registerAndEnrollUser(caClient, wallet, mspOrg1, app_id); // Enroll the ADMIN
+    const _dir = "/home/henry/EMR-sharing-Dapp/App/Dapp/routes/wallet/" ;
+    const data = fs.readFileSync(_dir+app_id+".id") ;
+    const x509Identity = JSON.parse(data) ;
+    console.log("x509...") ;
+    console.log(x509Identity) ;
+    console.log("Aes encrypt...") ;
+    // 加密
+    const key = privateKeyGen(x509Identity["credentials"]) ;
+    console.log("key...") ;
+    console.log(key) ;
+    var x509Identity_ciphertext = AES.encrypt(JSON.stringify(x509Identity), '1234567891234567').toString() ;
+    console.log(x509Identity_ciphertext) ;
 		let gateway = new Gateway();
 		try {
 			await gateway.connect(ccp, {
@@ -65,8 +81,12 @@ async function createIdentity(publicKey, did) {
 			// Get the contract from the network.
 			const contract = network.getContract(IDM);
 			console.log("Access IdentityManagement channel......") ;
-			info = await contract.submitTransaction("create_identity", publicKey, app_id, did, x509) ;
-			console.log(info.toString()) ;
+			info = await contract.submitTransaction("create_identity", publicKey, app_id, did, x509Identity_ciphertext) ;
+			// console.log(info.toString()) ;
+      console.log("get....") ;
+      var _info = await contract.submitTransaction("get", publicKey) ;
+      _info = JSON.parse(_info.toString()) ;
+      console.log(_info) ;
 		} // try 
 		finally {
 			// Disconnect from the gateway when the application is closing
@@ -78,6 +98,12 @@ async function createIdentity(publicKey, did) {
   catch (error) {
 		console.error(`******** FAILED to run the application: ${error}`);
 	} // catch
+
+  // 解密
+  var bytes  = AES.decrypt(_info["x509IdentityCipher"], '1234567891234567') ;
+  var originalObj = JSON.parse(bytes.toString(encUtf8)) ;
+  console.log("originObj...") ;
+  console.log(originalObj) ;
 
   return JSON.parse(info.toString());
 } // createIdentity()
