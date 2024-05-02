@@ -47,7 +47,7 @@ async function verify(_DID, _messageHash, _signature) {
 } // verify()
 
 async function createIdentity(publicKey, did) {
-  let info ;
+  let info, key ;
   try {
     const app_id = Date.now().toString() ; // tine use for App-chain id
     const ccp = buildCCPOrg1();
@@ -61,12 +61,12 @@ async function createIdentity(publicKey, did) {
     const x509Identity = JSON.parse(data) ;
     console.log("x509...") ;
     console.log(x509Identity) ;
-    console.log("Aes encrypt...") ;
     // 加密
-    const key = privateKeyGen(x509Identity["credentials"]) ;
+    key = privateKeyGen(x509Identity["credentials"]) ;
     console.log("key...") ;
     console.log(key) ;
-    var x509Identity_ciphertext = AES.encrypt(JSON.stringify(x509Identity), '1234567891234567').toString() ;
+    var x509Identity_ciphertext = AES.encrypt(JSON.stringify(x509Identity), key).toString() ;
+    console.log("cipher...") ;
     console.log(x509Identity_ciphertext) ;
 		let gateway = new Gateway();
 		try {
@@ -82,7 +82,6 @@ async function createIdentity(publicKey, did) {
 			const contract = network.getContract(IDM);
 			console.log("Access IdentityManagement channel......") ;
 			info = await contract.submitTransaction("create_identity", publicKey, app_id, did, x509Identity_ciphertext) ;
-			// console.log(info.toString()) ;
       console.log("get....") ;
       var _info = await contract.submitTransaction("get", publicKey) ;
       _info = JSON.parse(_info.toString()) ;
@@ -100,7 +99,7 @@ async function createIdentity(publicKey, did) {
 	} // catch
 
   // 解密
-  var bytes  = AES.decrypt(_info["x509IdentityCipher"], '1234567891234567') ;
+  var bytes  = AES.decrypt(_info["x509IdentityCipher"], key) ;
   var originalObj = JSON.parse(bytes.toString(encUtf8)) ;
   console.log("originObj...") ;
   console.log(originalObj) ;

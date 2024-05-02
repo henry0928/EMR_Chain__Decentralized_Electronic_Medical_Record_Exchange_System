@@ -10,6 +10,7 @@ var enrollRouter = require('./routes/enroll');
 var bindRouter = require('./routes/bind');
 var EMRsharingRouter = require('./routes/EMRsharing');
 var createIdentityRouter = require('./routes/createIdentity');
+var loginRouter = require('./routes/login');
 
 var app = express();
 
@@ -25,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', homeRouter);
 app.use('/enroll', enrollRouter);
-// app.use('/users', usersRouter);
+app.use('/login', loginRouter);
 app.use('/bind', bindRouter);
 app.use('/EMRsharing', EMRsharingRouter);
 app.use('/createIdentity', createIdentityRouter);

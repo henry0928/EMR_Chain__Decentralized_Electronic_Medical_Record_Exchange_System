@@ -1,5 +1,6 @@
 const { Contract } = require("fabric-contract-api");
 const { createSign, createVerify } = require('crypto');
+const ethers = require('ethers');
 
 class IDMContract extends Contract {
   constructor() {
@@ -122,6 +123,7 @@ class IDMContract extends Contract {
   } // revoke_doc_role()
 
   async authenticate_role(ctx, p_key, signature, role) {
+    // need to use app-id to query the ledger
     const buffer = await ctx.stub.getState(p_key);
     if (!buffer || !buffer.length) return { error: "(authenticate_role)USER NOT_FOUND" };
     let buffer_object = JSON.parse(buffer.toString()) ;
@@ -129,17 +131,30 @@ class IDMContract extends Contract {
   } // authenticate_role
 
   async login(ctx, p_key, signature, message) {
-    // 使用公鑰verify
-    const verifier = createVerify('rsa-sha256');
-    verifier.update(message);
-    const isVerified = verifier.verify(p_key, signature, 'hex');
-    if ( isVerified ) { 
+    // // 使用 crypto module verify
+    // const verify = crypto.createVerify('SHA256') ;
+    // verify.update(message) ;
+    // verify.end() ;
+    // const isVerified = verify.verify(p_key, signature) ;
+    // if ( isVerified ) { 
+    //   const buffer = await ctx.stub.getState(p_key);
+    //   if (!buffer || !buffer.length) return { error: "(login) Can't find the account, Please regist first!!" };
+    //   return JSON.parse(buffer.toString()) ;
+    // } // if 
+    
+    // 使用 ether.js module verifier
+    const messageHash = ethers.utils.hashMessage(message);
+    const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature);
+    const isVerified = recoveredAddress == p_key ;
+    if ( isVerified ) {
       const buffer = await ctx.stub.getState(p_key);
       if (!buffer || !buffer.length) return { error: "(login) Can't find the account, Please regist first!!" };
-      return buffer.toString() ;
+      return JSON.parse(buffer.toString()) ;
     } // if 
 
-    return { Error : "Verify Failed! You are not the user!!"} ;
+    return { error : "Verify Failed! You are not the user!!",
+             RecoverAddress : recoveredAddress,
+             PublicKey : p_key } ;
   } // login()
 } // IDMContract()
 
