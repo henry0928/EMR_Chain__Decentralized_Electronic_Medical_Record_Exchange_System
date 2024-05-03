@@ -58,7 +58,6 @@ router.post('/', async(req, res) => {
     const walletAddress = req.body.walletAddressInput ;
     const signature = req.body.signatureInput ;
     const message = req.body.messageInput ;
-    console.log(message) ;
     const resultObject = await login(walletAddress, signature, message) ;
     if ( resultObject.hasOwnProperty('error') )
       res.send(resultObject) ;

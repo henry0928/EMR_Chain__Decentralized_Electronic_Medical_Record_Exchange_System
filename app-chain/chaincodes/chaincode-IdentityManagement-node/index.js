@@ -143,8 +143,8 @@ class IDMContract extends Contract {
     // } // if 
     
     // 使用 ether.js module verifier
-    const messageHash = ethers.utils.hashMessage(message);
-    const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature);
+    message = ethers.utils.toUtf8Bytes(message) ;
+    const recoveredAddress = ethers.utils.verifyMessage(message, signature) ;
     const isVerified = recoveredAddress == p_key ;
     if ( isVerified ) {
       const buffer = await ctx.stub.getState(p_key);
@@ -154,7 +154,9 @@ class IDMContract extends Contract {
 
     return { error : "Verify Failed! You are not the user!!",
              RecoverAddress : recoveredAddress,
-             PublicKey : p_key } ;
+             PublicKey : p_key,
+             Signature : signature,
+             Message : message } ;
   } // login()
 } // IDMContract()
 

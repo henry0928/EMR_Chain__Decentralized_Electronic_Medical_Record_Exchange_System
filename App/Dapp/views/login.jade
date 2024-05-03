@@ -59,10 +59,10 @@ html
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
           if (messageInput.value) {
-            const messageHash = ethers.utils.hashMessage(messageInput.value);
-            const signature = await signer.signMessage(messageHash);
-            //- const signature = await signer.signMessage(ethers.utils.arrayify(ethers.utils.id(messageHash)));
-            signatureInput.value = signature;
+            let message = ethers.utils.toUtf8Bytes(messageInput.value) ;
+            const signature = await signer.signMessage(message) ;
+            signatureInput.value = signature ;
+            const recoveredAddress = await ethers.utils.verifyMessage(message, signature) ;
           } // if
           else 
             alert("Need to input the message!!!");
