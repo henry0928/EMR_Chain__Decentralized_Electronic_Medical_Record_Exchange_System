@@ -11,7 +11,7 @@ html
       h1 App-chain Login
         div#notice
             p.notice-title This is a notice for all users. Please read and accept before continuing.
-            p.notice 您的X509Identity會被醫院使用
+            p.notice 您的X509Identity將會被醫院使用 透過醫院金鑰加密的方式將確保您的私鑰會進行秘密傳輸
         div#accept
             input(type='checkbox', id='acceptCheckbox')
             label(for='acceptCheckbox') I accept the notice.
@@ -19,7 +19,8 @@ html
       form#bindAccountForm(action='/login', method='POST')
         label(for='walletAddressInput') Wallet Address:
         input#walletAddressInput(type='text' name='walletAddressInput' readonly='' required='')
-        br
+        label(for='encryptKeyInput') encryptKey:
+        input#encryptKeyInput(type='text' name='encryptKeyInput' readonly='' required='')
         button#connectButton(type='button') Login for sign signature
           img(src='images/MetaMask_Horizontal.svg', alt='MetaMask Logo')
           | 
@@ -29,17 +30,16 @@ html
         input#messageInput(type='text' name='messageInput' required='')
         button#SignButton(type='button') Sign
         br
-        //- br
-        //- label(for='messageHashInput') messageHash:
-        //- input#messageHashInput(type='text' name='messageHashInput' readonly='' required='')
         br
         label(for='signatureInput') Signature:
         input#signatureInput(type='text' name='signatureInput' readonly='' required='')
         button#loginButton(type='submit') login
     script.
+      let PIcontractAddress ;
+      const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
       const connectButton = document.getElementById("connectButton");
       const walletAddressInput = document.getElementById("walletAddressInput");
-      // const DIDInput = document.getElementById("DIDInput");
+      const encryptKeyInput = document.getElementById("encryptKeyInput");
       const messageInput = document.getElementById("messageInput");
       // const messageHashInput = document.getElementById("messageHashInput");
       const signatureInput = document.getElementById("signatureInput");
@@ -50,6 +50,21 @@ html
           const signer = provider.getSigner() ;
           const userAddress = await signer.getAddress() ;
           walletAddressInput.value = userAddress;
+          const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer) ;
+          try {
+            PIcontractAddress = await contract.getAccessManagerAddress(userAddress) ; 
+          } // try 
+          catch (error) {
+            alert(error) ;
+          } // catch
+          const contract2 = new ethers.Contract(PIcontractAddress, PersonalIdentityAbi, signer) ;
+          try {
+            const encryptKey = await contract2.get_app_private("CGMF") ; // pretend the org is "CGMF" 長庚醫院
+            encryptKeyInput.value = encryptKey ;
+          } // try 
+          catch (error) {
+            alert(error) ;
+          } // catch
         } // if 
         else 
           alert('Please download Metamask');

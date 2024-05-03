@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('node:fs');
 const { buildCAClient, registerAndEnrollUser, enrollAdmin} = require('../../../app-chain/app/CAUtil.js');
 const { buildCCPOrg1, buildWallet } = require('../../../app-chain/app/AppUtil.js');
+var AES = require("crypto-js/aes") ;
+var encUtf8 = require('crypto-js/enc-utf8');
 
 const channelName = process.env.CHANNEL_NAME || 'my-channel1';
 const chaincodeName = process.env.CHAINCODE_NAME || 'chaincode1';
@@ -58,11 +60,12 @@ router.post('/', async(req, res) => {
     const walletAddress = req.body.walletAddressInput ;
     const signature = req.body.signatureInput ;
     const message = req.body.messageInput ;
+    const encryptKey = req.body.encryptKeyInput ;
     const resultObject = await login(walletAddress, signature, message) ;
-    if ( resultObject.hasOwnProperty('error') )
-      res.send(resultObject) ;
-    else 
-      res.send(resultObject) ;
+    const bytes = AES.decrypt(encryptKey, '1234') ;
+    const originalText = bytes.toString(encUtf8) ;
+    resultObject["app-chain PrivateKey"] = originalText ;
+    res.send(resultObject) ;
 });
 
 module.exports = router;

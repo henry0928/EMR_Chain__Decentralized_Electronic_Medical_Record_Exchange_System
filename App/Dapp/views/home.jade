@@ -43,41 +43,23 @@ html
               span.user-info-label User Type:
               span#userType Standard User
         .user-info-box
-          h2.title.is-4 Upload and Get App-Chain Private Key
+          h2.title.is-4 Upload the Encrypted App-Chain Private Key
           .input-container
             p.user-info-item
               span.user-info-label Your Contract Address:
               span#contractAddressInput 0x1234...5678
-          .input-container
-            p.user-info-item
-              span.user-info-label Encryption PublicKey:
-              span#EncryptionPublicKeyInput .....
-            button#getPubkeyButton.primary(type='button') Get EncryptionPublicKey
           br
           .input-container
             label.user-info-label(for='s_privateKeyInput') Upload Encrypted App-Chain Private Key:
-            input#s_privateKeyInput(type='text' size='10' placeholder='Enter Encrypted App-Chain Private Key')
-            select#setAppOption(name='App')
-              option(value='' selected='') Choose the Application
-              option(value='OpenBanking') OpenBanking
-              option(value='E_profile') E-profle
-              option(value='EMR_sharing') EMR-Sharing
-              option(value='DNA_sequence') DNA-Sequence
+            br
+            p.user-info-message Please choose the Organization.
+            select#setOrgOption(name='App')
+              option(value='' selected='') Choose the Organization
+              option(value='CGMF') 長庚醫院CGMF
+              option(value='CHUH') 中國醫藥大學CHUH
+              option(value='NTUH') 臺大醫院NTUH
+            input#s_privateKeyInput(type='text' size='20' placeholder='Enter App-Chain Private Key')
             button#uploadPrikeyButton.primary(type='button') Upload
-          br
-          .input-container
-            label.user-info-label(for='g_privateKey_p') Get Encrypted App-Chain Private Key:
-            p#g_privateKey_p
-            p#decrypt_g_privateKey_p
-            select#getAppOption(name='App')
-              option(value='' selected='') Choose the Application
-              option(value='OpenBanking') OpenBanking
-              option(value='E_profile') E-profle
-              option(value='EMR_sharing') EMR-Sharing
-              option(value='DNA_sequence') DNA-Sequence
-            button#getPrikeyButton.primary(type='button') Get Encrypted Private Key
-            | &nbsp; &nbsp; &nbsp;
-            button#decryptPrikeyButton.primary(type='button') Decrypted
         .user-info-box
           h2.user-info-title Join Application
           p.user-info-message Join the Application by verify Main Identity
@@ -98,13 +80,8 @@ html
       const contractAddressElement = document.getElementById("contractAddress") ;
       const userTypeElement = document.getElementById("userType") ;
       const contractAddressInputElement = document.getElementById("contractAddressInput") ;
-      const EncryptionPublicKeyInputElement = document.getElementById("EncryptionPublicKeyInput") ;
       const s_privateKeyInputElement = document.getElementById("s_privateKeyInput") ;
-      const g_privateKey_pElement = document.getElementById("g_privateKey_p") ;
-      const decrypt_g_privateKey_pElement = document.getElementById("decrypt_g_privateKey_p") ;
-      const setAppOptionSelect = document.getElementById("setAppOption") ;
-      const getAppOptionSelect = document.getElementById("getAppOption") ;
-      const joinAppOptionSelect = document.getElementById("joinAppOption") ;
+      const setOrgOptionSelect = document.getElementById("setOrgOption") ;
       const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
       let s_App_option ;
       let g_App_option ;
@@ -126,19 +103,14 @@ html
       } // function
 
       document.addEventListener('DOMContentLoaded', function() {
-        setAppOptionSelect.selectedIndex = 0;
-        getAppOptionSelect.selectedIndex = 0;
-        //- joinAppOptionSelect.selectedIndex = 0;
+        setOrgOptionSelect.selectedIndex = 0;
         s_privateKeyInputElement.value = "";
       });
       s_privateKeyInputElement.addEventListener('input', (event) => {
         set_private = event.target.value;
       });
-      setAppOptionSelect.addEventListener('change', (event) => {
-        s_App_option = event.target.value;
-      });
-      getAppOptionSelect.addEventListener('change', (event) => {
-        g_App_option = event.target.value;
+      setOrgOptionSelect.addEventListener('change', (event) => {
+        orgOption = event.target.value;
       });
       // Event listener for the "Connect Wallet" button
       connectWalletButton.addEventListener("click", async function() {
@@ -184,19 +156,19 @@ html
         else 
           alert('Please download Metamask');
       });
-      getPubkeyButton.addEventListener("click", async function() {
-        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner() ;
-        const userAddress = await signer.getAddress() ;
-        const Pubkey = await window.ethereum.request({
-          "method": "eth_getEncryptionPublicKey",
-          "params": [
-            userAddress
-          ]
-        });
-        EncryptionPublicKeyInputElement.textContent = Pubkey ;
-      });
+      //- getPubkeyButton.addEventListener("click", async function() {
+      //-   const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+      //-   await provider.send("eth_requestAccounts", []);
+      //-   const signer = provider.getSigner() ;
+      //-   const userAddress = await signer.getAddress() ;
+      //-   const Pubkey = await window.ethereum.request({
+      //-     "method": "eth_getEncryptionPublicKey",
+      //-     "params": [
+      //-       userAddress
+      //-     ]
+      //-   });
+      //-   EncryptionPublicKeyInputElement.textContent = Pubkey ;
+      //- });
 
       uploadPrikeyButton.addEventListener("click", async function() {
         const contractAddress = contractAddressInputElement.textContent;
@@ -206,55 +178,19 @@ html
         const userAddress = await signer.getAddress() ;
         const contract = new ethers.Contract(contractAddress, PersonalIdentityAbi, signer);
         try {
-          if (s_App_option && set_private)
-            await contract.set_app_private(s_App_option, set_private) ;
+          if (orgOption && set_private) {
+            const res = await contract.set_app_private(orgOption, set_private) ;
+            if (res)
+              alert("Upload EncryptedPrivateKey Success!") ;
+            else 
+              alert("FAIL to upload EncryptedPrivateKey!") ;
+          } // if  
           else 
-            alert("Please choose the Application or upload the privateKey!!!") ;
+            alert("Please choose the Organization or upload the privateKey!!!") ;
         } // try 
         catch (error) {
           alert(error) ;
         } // catch
-      });
-
-      getPrikeyButton.addEventListener("click", async function() {
-        const contractAddress = contractAddressInputElement.textContent;
-        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner() ;
-        const userAddress = await signer.getAddress() ;
-        const contract = new ethers.Contract(contractAddress, PersonalIdentityAbi, signer);
-        let key ;
-        try {
-          if (g_App_option)
-            key = await contract.get_app_private(g_App_option) ;
-          else 
-            alert("Please choose the Application !!!") ;
-        } // try 
-        catch (error) {
-          alert(error) ;
-        } // catch
-        g_privateKey_pElement.textContent = "EncryptedKey: " + key ;
-        
-      });
-
-      decryptPrikeyButton.addEventListener("click", async function() {
-        const provider = new ethers.providers.Web3Provider(window.ethereum) ;
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner() ;
-        const userAddress = await signer.getAddress() ;
-        let key ;
-        let privateKey = g_privateKey_pElement.textContent ;
-        privateKey = "0x" + privateKey.toString('hex');
-        alert(privateKey) ;
-        key = await provider.send({
-          "method": "eth_decrypt",
-          "params": [
-            privateKey,
-            userAddress
-          ]
-        });
-        alert(key) ;
-        //- decrypt_g_privateKey_pElement.textContent = "Key: " + key ;  
       });
 
       OBButton.addEventListener("click", async function() {

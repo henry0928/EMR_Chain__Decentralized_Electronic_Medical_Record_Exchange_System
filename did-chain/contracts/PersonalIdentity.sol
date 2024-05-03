@@ -51,11 +51,12 @@ contract PersonalIdentity {
         return app ;
     } // set_app()
 
-    function set_app_private(string calldata org, string calldata encrypt_key) external onlyOwner {
+    function set_app_private(string calldata org, string calldata encrypt_key) external onlyOwner returns(bool) {
         app_private[org] = encrypt_key ;
+        return true ;
     } // set_app_private()
 
-    function get_app_private(string calldata org) external view onlyOwner returns(string memory) {
+    function get_app_private(string calldata org) external view returns(string memory) {
         return app_private[org] ;
     } // set_app_private()
 
