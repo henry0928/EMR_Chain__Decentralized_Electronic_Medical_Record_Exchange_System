@@ -96,10 +96,10 @@ async function createIdentity(publicKey, did) {
 	} // catch
 
   // 解密
-  var bytes  = AES.decrypt(_info["x509IdentityCipher"], key) ;
-  var originalObj = JSON.parse(bytes.toString(encUtf8)) ;
-  console.log("originObj...") ;
-  console.log(originalObj) ;
+  // var bytes  = AES.decrypt(_info["x509IdentityCipher"], key) ;
+  // var originalObj = JSON.parse(bytes.toString(encUtf8)) ;
+  // console.log("originObj...") ;
+  // console.log(originalObj) ;
 
 
   const result = JSON.parse(info.toString()) ;
@@ -119,11 +119,12 @@ router.post('/', async(req, res) => {
   const messageHash = req.body.messageHashInput ;
   const signature = req.body.signatureInput ;
   const result = await verify(DID, messageHash, signature) ;
+  console.log("still...") ;
   if (result) {
     const object = await createIdentity(walletAddress, DID) ;
     let Info ;
     if (object.hasOwnProperty('success'))
-      Info = "Success " + object["success"] + "\n" + "key: " + object["key"] ;
+      Info = "Success " + object["success"] + "\\n" + "key: " + object["key"] ;
     else 
       Info = "Error " + object["error"] ;
     const script = `

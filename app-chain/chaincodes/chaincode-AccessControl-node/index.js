@@ -64,22 +64,22 @@ class ACLContract extends Contract {
     // 3 -> 地區醫院
     // 4 -> 基層診所
 
-    // const hospital_info_object = {
-    //   level : level,
-    //   open_access : false,
-    //   pointer : _pointer,
-    //   hash : _hash
-    // } ;
-    // let value = {
-    //   [hospital_id] : hospital_info_object //  hospital_DID -> info_object
-    // } ;
+    const hospital_info_object = {
+      level : level,
+      open_access : false,
+      pointer : _pointer,
+      hash : _hash
+    } ;
+    let value = {
+      [hospital_id] : hospital_info_object //  hospital_DID -> info_object
+    } ;
 
     // const _creater = ctx.stub.getMspID() ; // use getMspID() may get the another mspID(i guess because the transaction is
     // commit by another org)
-    const _creater = ctx.clientIdentity.getAttributeValue("peer") ; // here need to be figure out !
-    let value = {
-      Creater : _creater // To record the creator of access control instance 
-    } ;
+    // const _creater = ctx.clientIdentity.getAttributeValue("peer") ; // here need to be figure out !
+    // let value = {
+    //   Creater : _creater // To record the creator of access control instance 
+    // } ;
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
     return { success: "OK (create_patient_instance)", 
