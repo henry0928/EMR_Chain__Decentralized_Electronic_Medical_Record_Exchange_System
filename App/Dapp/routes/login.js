@@ -23,8 +23,8 @@ async function login(publicKey, signature, message) {
     let info ; 
     try {
       const ccp = buildCCPOrg1() ;
-      let gateway = new Gateway() ;
       const wallet = await buildWallet(Wallets, walletPath);
+      let gateway = new Gateway() ;
       try {
         await gateway.connect(ccp, {
             wallet : wallet,
@@ -57,15 +57,23 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', async(req, res) => {
+    const wallet = await buildWallet(Wallets, walletPath);
     const walletAddress = req.body.walletAddressInput ;
     const signature = req.body.signatureInput ;
     const message = req.body.messageInput ;
     const encryptKey = req.body.encryptKeyInput ;
     const resultObject = await login(walletAddress, signature, message) ;
-    const bytes = AES.decrypt(encryptKey, '1234') ;
-    const originalText = bytes.toString(encUtf8) ;
-    resultObject["app-chain PrivateKey"] = originalText ;
-    res.send(resultObject) ;
+    const bytes = AES.decrypt(encryptKey, '1234');
+    const privateKeyPartial = bytes.toString(encUtf8);
+    resultObject["app-chain PrivateKey"] = privateKeyPartial ;
+    // 解密user x509Identity
+    var _bytes = AES.decrypt(resultObject["x509IdentityCipher"], privateKeyPartial) ;
+    const userX509Identity = JSON.parse(_bytes.toString(encUtf8)) ;
+    await wallet.put(resultObject["AppId"], userX509Identity) ;
+    const userId = resultObject["AppId"] ;
+    const role = resultObject["Role"] ;
+    const redirectUrl = `/EMRsharing?userId=${userId}&role=${role}`;
+    res.redirect(redirectUrl);
 });
 
 module.exports = router;

@@ -173,7 +173,7 @@ const IdentityManagerAbi = [
   }
 ];
 
-const PersonalIdentityAbi =  [
+const PersonalIdentityAbi = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",

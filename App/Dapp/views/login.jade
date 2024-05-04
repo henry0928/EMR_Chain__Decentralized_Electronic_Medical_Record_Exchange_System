@@ -20,8 +20,8 @@ html
         label(for='walletAddressInput') Wallet Address:
         input#walletAddressInput(type='text' name='walletAddressInput' readonly='' required='')
         label(for='encryptKeyInput') encryptKey:
-        input#encryptKeyInput(type='text' name='encryptKeyInput' readonly='' required='')
-        button#connectButton(type='button') Login for sign signature
+        input#encryptKeyInput(type='text' name='encryptKeyInput' required='' placeholder='Enter Encrypted App-Chain Private Key')
+        button#connectButton(type='button')
           img(src='images/MetaMask_Horizontal.svg', alt='MetaMask Logo')
           | 
         br
@@ -45,26 +45,31 @@ html
       const signatureInput = document.getElementById("signatureInput");
       connectButton.addEventListener("click", async function() {
         if (window.ethereum) {
-          const provider = new ethers.providers.Web3Provider(window.ethereum) ;
-          await provider.send("eth_requestAccounts", []);
-          const signer = provider.getSigner() ;
-          const userAddress = await signer.getAddress() ;
-          walletAddressInput.value = userAddress;
-          const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer) ;
-          try {
-            PIcontractAddress = await contract.getAccessManagerAddress(userAddress) ; 
-          } // try 
-          catch (error) {
-            alert(error) ;
-          } // catch
-          const contract2 = new ethers.Contract(PIcontractAddress, PersonalIdentityAbi, signer) ;
-          try {
-            const encryptKey = await contract2.get_app_private("CGMF") ; // pretend the org is "CGMF" 長庚醫院
-            encryptKeyInput.value = encryptKey ;
-          } // try 
-          catch (error) {
-            alert(error) ;
-          } // catch
+          if (encryptKeyInput.value) {
+            const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner() ;
+            const userAddress = await signer.getAddress() ;
+            walletAddressInput.value = userAddress;
+            
+          } // if
+          else 
+            alert("Please enter the privateKey first!!") ;
+          //- const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer) ;
+          //- try {
+          //-   PIcontractAddress = await contract.getAccessManagerAddress(userAddress) ; 
+          //- } // try 
+          //- catch (error) {
+          //-   alert(error) ;
+          //- } // catch
+          //- const contract2 = new ethers.Contract(PIcontractAddress, PersonalIdentityAbi, signer) ;
+          //- try {
+          //-   const encryptKey = await contract2.get_app_private("CGMF") ; // pretend the org is "CGMF" 長庚醫院
+          //-   encryptKeyInput.value = encryptKey ;
+          //- } // try 
+          //- catch (error) {
+          //-   alert(error) ;
+          //- } // catch
         } // if 
         else 
           alert('Please download Metamask');

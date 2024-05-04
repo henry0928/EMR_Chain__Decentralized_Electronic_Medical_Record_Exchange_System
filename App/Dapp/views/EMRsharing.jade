@@ -12,14 +12,39 @@ html
           li.link(style='float:right')
             a(href='/createIdentity') Create Identity
           li.link(style='float:right')
-            a(href='/login') EMR-sharing login
+            a(href='/login') EMR-sharing-login
           li.link(style='float:right')
             a(href='/userModule') User module
           li.link(style='float:right')
             a(href='/') DID-Dashboard
     main
+      .user-info-box
+          h2.user-info-title User Information
+          p.user-info-message Please Login First.
+          .user-info-details
+            p.user-info-item
+              span.user-info-label UserId: 
+              span#userID ............
+            p.user-info-item
+              span.user-info-label Role: 
+              span#Role Patient/Doctor/Supervisor
       .dashboard
         - for (var i = 0; i < 7; i++)
           .container 
             h2 Container #{i+1}
             p This is some sample text for Container #{i+1}.
+      
+    script.
+      const userIdElement = document.getElementById("userID");
+      const RoleElement = document.getElementById("Role");
+      const queryParams = new URLSearchParams(window.location.search);
+      // Get the values of the variables from the query parameters
+      const userId = queryParams.get('userId');
+      const role = queryParams.get('role');
+      if (userId)
+        userIdElement.textContent = userId ;
+      if (role)
+        RoleElement.textContent = role ;
+      // if (role && userId)
+
+      

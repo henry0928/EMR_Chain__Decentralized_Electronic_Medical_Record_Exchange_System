@@ -5,7 +5,7 @@ const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require('fabric-ca-client');
 const path = require('path');
 const fs = require('node:fs');
-const { buildCAClient, registerAndEnrollUser, enrollAdmin} = require('../../../app-chain/app/CAUtil.js');
+const { buildCAClient, registerAndEnrollUser, enrollAdmin, registerAndEnrollUserV2} = require('../../../app-chain/app/CAUtil.js');
 const { buildCCPOrg1, buildWallet } = require('../../../app-chain/app/AppUtil.js');
 const { ethers } = require('ethers');
 const AES = require("crypto-js/aes") ;
@@ -55,10 +55,7 @@ async function createIdentity(publicKey, did) {
 		const wallet = await buildWallet(Wallets, walletPath);
 		await enrollAdmin(caClient, wallet, mspOrg1);
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, adminID); // Enroll the ADMIN
-    await registerAndEnrollUser(caClient, wallet, mspOrg1, app_id); // Enroll the ADMIN
-    const _dir = "/home/henry/EMR-sharing-Dapp/App/Dapp/routes/wallet/" ;
-    const data = fs.readFileSync(_dir+app_id+".id") ;
-    const x509Identity = JSON.parse(data) ;
+    const x509Identity = await registerAndEnrollUserV2(caClient, wallet, mspOrg1, app_id); // Enroll the user
     console.log("x509...") ;
     console.log(x509Identity) ;
     // 加密
@@ -104,7 +101,10 @@ async function createIdentity(publicKey, did) {
   console.log("originObj...") ;
   console.log(originalObj) ;
 
-  return JSON.parse(info.toString());
+
+  const result = JSON.parse(info.toString()) ;
+  result["key"] = key ;
+  return result ;
 } // createIdentity()
 
 
@@ -123,7 +123,7 @@ router.post('/', async(req, res) => {
     const object = await createIdentity(walletAddress, DID) ;
     let Info ;
     if (object.hasOwnProperty('success'))
-      Info = "Success " + object["success"] ;
+      Info = "Success " + object["success"] + "\n" + "key: " + object["key"] ;
     else 
       Info = "Error " + object["error"] ;
     const script = `

@@ -57,3 +57,49 @@ nav a:hover {
 .container p {
   color: #666;
 }
+
+.user-info-box {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 10px 0;
+  background-color: #f9f9f9;
+}
+
+.user-info-title {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 24px;
+}
+
+.user-info-message {
+    color: #4a4949;
+    margin-bottom: 20px;
+}
+
+.user-info-details {
+    margin-left: 10px;
+}
+
+.user-info-item {
+    margin-bottom: 10px;
+}
+
+.user-info-label {
+    font-weight: bold;
+    color: #333;
+}
+
+#user-info {
+  /* Styles for the User INFO section */
+  background-color: #f2f2f2;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+#userID,
+#Role {
+  width: 50%;
+  font-style: italic;
+  color: #999;
+}

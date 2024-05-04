@@ -179,11 +179,15 @@ html
         const contract = new ethers.Contract(contractAddress, PersonalIdentityAbi, signer);
         try {
           if (orgOption && set_private) {
-            const res = await contract.set_app_private(orgOption, set_private) ;
+            //- const set_private_array = set_private.split("") ;
+            // const set_private_array = ethers.utils.toUtf8Bytes(set_private);
+            const res = await contract.set_app_private(ethers.utils.formatBytes32String(orgOption), ethers.utils.formatBytes32String(set_private)) ;
             if (res)
               alert("Upload EncryptedPrivateKey Success!") ;
             else 
               alert("FAIL to upload EncryptedPrivateKey!") ;
+            //- const ans = await contract.get_app_private(ethers.utils.formatBytes32String(orgOption)) ;
+            //- alert(ans) ;
           } // if  
           else 
             alert("Please choose the Organization or upload the privateKey!!!") ;
