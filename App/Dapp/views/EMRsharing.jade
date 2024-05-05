@@ -40,7 +40,7 @@ html
                 p This is some sample text for Container #{i+1}.
       
     script.
-      async function fetchData() {
+      async function getACL(uid) {
         try {
           const response = await fetch('/EMRsharing/getACL', {
             method: 'POST', // or 'GET', 'PUT', etc.
@@ -49,8 +49,7 @@ html
               // 'Authorization': 'Bearer ' + token // if you use token-based authentication
             },
             body: JSON.stringify({
-              key1: 'value1',
-              key2: 'value2',
+              userId: uid,
               // ...other data...
             })
           });
@@ -61,11 +60,11 @@ html
 
           const data = await response.json(); // parse the response as JSON
           console.log('Success:', data);
-          alert(data) ;
-        } catch (error) {
+        } // try 
+        catch (error) {
           console.error('Error:', error);
-        }
-      }
+        } // catch
+      } // getACL
       const userIdElement = document.getElementById("userID");
       const RoleElement = document.getElementById("Role");
       const userMessageElement = document.getElementById("user-info-message");
@@ -79,7 +78,7 @@ html
         RoleElement.textContent = role ;
       if (role && userId) {
         userMessageElement.textContent = "Please Enjoy!!" ;
-        fetchData();
+        getACL(userId);
       } // if 
 
       

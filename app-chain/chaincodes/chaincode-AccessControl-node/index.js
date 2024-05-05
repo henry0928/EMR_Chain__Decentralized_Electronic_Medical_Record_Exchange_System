@@ -16,8 +16,11 @@ class ACLContract extends Contract {
     const commit_id = ctx.clientIdentity.getAttributeValue("user_id") ;
     const peer_id = ctx.clientIdentity.getAttributeValue("peer") ;
     if ( input["fcn"] === "create_patient_instance" ) { // Only supervisor can create instance
-      if ( commit_id != "supervisor" ) {
-        const log = "Only admin can create the instance ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
+      const response = await ctx.stub.invokeChaincode("IDM", ["verify_role", commit_id], "identity-management");
+      let role = response.payload ;
+      role = role.toString() ;
+      if ( role != "supervisor" ) {
+        const log = "Only admin can create the instance ( Wrong commit_id: " + role + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;   
       } // if 
     } // if 
@@ -28,11 +31,12 @@ class ACLContract extends Contract {
       } // if     
     } // if
     else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only can update own(Hospital) record
-      if ( commit_id != input["params"][0] ||  peer_id != input["params"][1] ) { // input["params"][0] == hospital_id
-        const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " or Wrong commit_id: " + 
-                    commit_id + " ) " +  "(" + input["fcn"] + ")" ;
-        throw new Error(log) ;    
-      } // if 
+      // if ( commit_id != input["params"][0] ||  peer_id != input["params"][1] ) { // input["params"][1] == hospital_id
+      //   const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " or Wrong commit_id: " + 
+      //               commit_id + " ) " +  "(" + input["fcn"] + ")" ;
+      //   throw new Error(log) ;    
+      // } // if
+      ; // need to access IDM channel to verify the commit Identity
     } // else if 
       
   } // beforeTransaction()
@@ -64,22 +68,22 @@ class ACLContract extends Contract {
     // 3 -> 地區醫院
     // 4 -> 基層診所
 
-    const hospital_info_object = {
-      level : level,
-      open_access : false,
-      pointer : _pointer,
-      hash : _hash
-    } ;
-    let value = {
-      [hospital_id] : hospital_info_object //  hospital_DID -> info_object
-    } ;
+    // const hospital_info_object = {
+    //   level : _level,
+    //   open_access : false,
+    //   pointer : _pointer,
+    //   hash : _hash
+    // } ;
+    // let value = {
+    //   [hospital_id] : hospital_info_object //  hospital_DID -> info_object
+    // } ;
 
     // const _creater = ctx.stub.getMspID() ; // use getMspID() may get the another mspID(i guess because the transaction is
     // commit by another org)
-    // const _creater = ctx.clientIdentity.getAttributeValue("peer") ; // here need to be figure out !
-    // let value = {
-    //   Creater : _creater // To record the creator of access control instance 
-    // } ;
+    const _creater = ctx.clientIdentity.getAttributeValue("user_id") ; 
+    let value = {
+      Creater : _creater // To record the creator of access control instance 
+    } ;
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
     return { success: "OK (create_patient_instance)", 
@@ -87,13 +91,13 @@ class ACLContract extends Contract {
            } ;   
   } // create_patient_instance()
 
-  async update_instance(ctx, patient_id, hospital_id, _hash) {
+  async update_instance(ctx, patient_id, hospital_id, _pointer, _hash) {
     const buffer = await ctx.stub.getState(patient_id);
     if (!buffer || !buffer.length) return { error: "(update_instance)Patient NOT_FOUND" };
-    const transient = ctx.stub.getTransient();
-    const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
+    // const transient = ctx.stub.getTransient();
+    // const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
     let buffer_object = JSON.parse(buffer.toString()) ;
-    const level  = 2 ; // need to get the level from DID chain 
+    const level  = 2 ; // need to get the level from IDM channel
     const value = {
       level : level,
       open_access : false,

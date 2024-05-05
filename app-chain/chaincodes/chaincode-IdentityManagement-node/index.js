@@ -15,20 +15,14 @@ class IDMContract extends Contract {
     const input = ctx.stub.getFunctionAndParameters() ;
     const commit_id = ctx.clientIdentity.getAttributeValue("user_id") ;
     const msp_id = ctx.clientIdentity.getMSPID() ;
-    if ( input["fcn"] === "create_identity" ) { // Only supervisor can create identity
-      if ( commit_id != "ADMIN" || msp_id != "Org1MSP" ) {
+    if ( input["fcn"] === "create_identity" || input["fcn"] === "consent_sup_role" || input["fcn"] === "revoke_sup_role" ) { // Only org1 ADMIN can create identity
+      if ( commit_id != "org1ADMIN" || msp_id != "Org1MSP" ) {
         const log = "Only ADMIN can create the Identity ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;   
       } // if 
     } // if
-    else if ( input["fcn"] === "consent_doc_role" || input["fcn"] === "revoke_doc_role" ) { // Only supervisor can create identity
-      if ( msp_id != "Org2MSP" ) {
-        const log = "Only HCA can create/revoke the doctor identity ( Wrong msp_id: " + msp_id + " ) " ;
-        throw new Error(log) ;   
-      } // if 
-    } // else if
-    else if ( input["fcn"] === "consent_sup_role" || input["fcn"] === "revoke_sup_role" ) { // Only supervisor can create identity
-      if ( msp_id != "Org2MSP" ) {
+    else if ( input["fcn"] === "consent_doc_role" || input["fcn"] === "revoke_doc_role" ) { // Only org2 ADMIN can consent identity
+      if ( commit_id != "org2ADMIN" || msp_id != "Org2MSP" ) {
         const log = "Only MHW can create/revoke the supervisor identity ( Wrong msp_id: " + msp_id + " ) " ;
         throw new Error(log) ;   
       } // if 
@@ -42,6 +36,16 @@ class IDMContract extends Contract {
     console.log(buffer_object) ; 
     return buffer_object;
   } // for testing the ledger 
+
+  async verify_role(ctx, appId) {
+    const iterator = await ctx.stub.getQueryResult("{\"selector\":{\"AppId\":\"" + appId + "\"}}");
+    let res = await iterator.next();
+    const key = res.value.key ;
+    let value = JSON.parse(res.value.value.toString("utf8")) ;
+    await iterator.close() ; // close the iterator
+    const role = value["Role"] ;
+    return role ;
+  } // verify_role()
   
   async create_identity(ctx, p_key, app_id, did, x509Cipher) {
     const buffer = await ctx.stub.getState(p_key);

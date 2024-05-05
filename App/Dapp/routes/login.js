@@ -15,7 +15,7 @@ const IDM = "IDM" ;
 
 const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
-const adminID = "ADMIN" ;
+const adminID = "org1ADMIN" ;
 
 var router = express.Router();
 
