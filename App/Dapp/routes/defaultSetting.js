@@ -28,7 +28,8 @@ const walletPath = path.join(__dirname, 'wallet');
 const walletPath2 = path.join(__dirname, 'wallet2');
 const org1ADMIN = 'org1ADMIN';
 const org2ADMIN = 'org2ADMIN';
-const cgmhPublicKey = "0x3E014E5c311a7D6F652CA4F8bb016f4338A44118" ;
+const cgmhPublicKey = "0x3E014E5c311a7D6F652CA4F8bb016f4338A44118" ; // 倒數第二個帳號
+const henryPublicKey = "0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E" ; // 倒數第三個帳號
 
 
 
@@ -61,6 +62,7 @@ async function main() {
 		// and would be part of an administrative flow
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1ADMIN); // Enroll the org1ADMIN
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, "cgmh"); // Enroll the 長庚醫院
+		await registerAndEnrollUser(caClient, wallet, mspOrg1, "henry"); // Enroll the 長庚醫院‘s doctor
 		// await registerAndEnrollUser(ca2Client, wallet2, mspOrg2, org2ADMIN); // Enroll the org2ADMIN
 
 		// Create a new gateway instance for interacting with the fabric network.
@@ -87,7 +89,7 @@ async function main() {
 			console.log("IdentityManagement channel......") ;
 			let info = await contract.submitTransaction("create_identity", cgmhPublicKey, "cgmh", "none", "none") ;
 			console.log(JSON.parse(info.toString())) ;
-			info = await contract.submitTransaction("consent_sup_role", "none") ;
+			info = await contract.submitTransaction("consent_sup_role", "none", 1) ; // 1 means 醫學中心
 			console.log(JSON.parse(info)) ;
 			info = await contract.submitTransaction("get", cgmhPublicKey) ;
 			console.log(JSON.parse(info.toString())) ;

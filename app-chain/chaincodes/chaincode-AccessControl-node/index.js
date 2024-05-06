@@ -20,7 +20,7 @@ class ACLContract extends Contract {
       let role = response.payload ;
       role = role.toString() ;
       if ( role != "supervisor" ) {
-        const log = "Only admin can create the instance ( Wrong commit_id: " + role + " ) " + " (" + input["fcn"] + ")" ;
+        const log = "Only admin can create the instance ( Wrong role: " + role + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;   
       } // if 
     } // if 
@@ -30,14 +30,16 @@ class ACLContract extends Contract {
         throw new Error(log) ;    
       } // if     
     } // if
-    else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only can update own(Hospital) record
-      // if ( commit_id != input["params"][0] ||  peer_id != input["params"][1] ) { // input["params"][1] == hospital_id
-      //   const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong msp_id: " + msp_id + " or Wrong commit_id: " + 
-      //               commit_id + " ) " +  "(" + input["fcn"] + ")" ;
-      //   throw new Error(log) ;    
-      // } // if
-      ; // need to access IDM channel to verify the commit Identity
-    } // else if 
+    // else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only health-provider(doctor) can update
+    //   // const response = await ctx.stub.invokeChaincode("IDM", ["verify_role", commit_id], "identity-management");
+    //   // let role = response.payload ;
+    //   // role = role.toString() ;
+    //   // if ( role != "doctor" ) {
+    //   //   const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong role: " + role + " ) " +  "(" + input["fcn"] + ")" ;
+    //   //   throw new Error(log) ;    
+    //   // } // if
+    //   ; // test
+    // } // else if 
       
   } // beforeTransaction()
 
@@ -97,7 +99,9 @@ class ACLContract extends Contract {
     // const transient = ctx.stub.getTransient();
     // const _pointer = transient.get("pointer").toString("base64");  // need to fix the url problem // remember that the upload url will be encrypt!!!!
     let buffer_object = JSON.parse(buffer.toString()) ;
-    const level  = 2 ; // need to get the level from IDM channel
+    const response = await ctx.stub.invokeChaincode("IDM", ["getHealthLevel", hospital_id], "identity-management");
+    let _level = response.payload ;
+    const level = _level.toString() ;
     const value = {
       level : level,
       open_access : false,

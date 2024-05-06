@@ -18,7 +18,8 @@ html
           li.link(style='float:right')
             a(href='/') DID-Dashboard
     main
-      .user-info-box
+      .dashboard
+        .user-info-box
           h2.user-info-title User Information
           p#user-info-message Please Login First.
           .user-info-details
@@ -27,13 +28,37 @@ html
               span#userID
             p.user-info-item
               span.user-info-label Role: 
-              span#Role Patient/Doctor/Supervisor
-      .dashboard
+              span#Role Patient/Doctor/Supervisor 
+            button#ReloadButton(type='button') Reload Page
         - for (var i = 0; i < 6; i++)
-          - if ( i == 0 )
-              .container 
+          - if (i == 0)
+              .container
                 h2 AccessControl Instance Overview
                 p The overview about your EMRsharing.
+                pre#data
+          - else if (i == 1)
+              .container
+                h2 Consent Access or Revoke Access
+                p You can choose to Consent all level to access or only allow higher health-provider level to access
+                button#consentButton(type='button') Consent
+                button#revokeButton(type='button') Revoke
+          - else if (i == 2)
+              .container
+                h2 Update instance or Update hash
+                p Upload the new instance or the updated hash value
+                p NEED TO LOGIN with "doctor" ROLE!!!
+                label(for='hospitalIdInput') hospitalId:
+                input#hospitalIdInput(type='text' name='hospitalIdInput' required='')
+                br
+                label(for='pointerInput') pointer:
+                input#pointerInput(type='text' name='pointerInput' required='')
+                br
+                label(for='hashInput') hash:
+                input#hashInput(type='text' name='hashInput' required='')
+                br
+                button#updateInsatnceButton(type='button') Update instance
+                pre#updateInstanceResponce
+                button#updateHashButton(type='button') Update hash
           - else
               .container 
                 h2 Container #{i+1}
@@ -59,15 +84,76 @@ html
           }
 
           const data = await response.json(); // parse the response as JSON
-          console.log('Success:', data);
+          // console.log('Success:', data);
+          // Render the data within the if (i == 0) block
+          if (data["result"]) {
+            const dataElement = document.getElementById("data");
+            dataElement.textContent = JSON.stringify(data["result"], null, 2);
+          }
         } // try 
         catch (error) {
           console.error('Error:', error);
         } // catch
       } // getACL
+
+      async function updateInstance(uid, _hospitalId, _pointer, _hash) {
+        alert(_hospitalId) ;
+        try {
+          const response = await fetch('/EMRsharing/updateInstance', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Authorization': 'Bearer ' + token // if you use token-based authentication
+            },
+            body: JSON.stringify({
+              userId: uid,
+              hospitalId: _hospitalId,
+              pointer: _pointer,
+              hash: _hash
+              // ...other data...
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json(); // parse the response as JSON
+          console.log('Success:', data);
+          alert(data["result"]["success"]);
+        } // try 
+        catch (error) {
+          console.error('Error:', error);
+        } // catch
+      } // updateInstance()
       const userIdElement = document.getElementById("userID");
       const RoleElement = document.getElementById("Role");
       const userMessageElement = document.getElementById("user-info-message");
+      const hospitalIdInput = document.getElementById("hospitalIdInput");
+      const pointerInput = document.getElementById("pointerInput");
+      const hashInput = document.getElementById("hashInput");
+
+      document.addEventListener('DOMContentLoaded', function() {
+        hospitalIdInput.value = "" ;
+        pointerInput.value = "" ;
+        hashInput.value = "" ; 
+      });
+
+      ReloadButton.addEventListener("click", async function() {
+        location.reload() ;
+      });
+
+      updateInsatnceButton.addEventListener("click", async function() {
+        if ( !hospitalIdInput.value || !pointerInput.value || !hashInput.value )
+          alert("Input the essential infomation first!!") ;
+        else { 
+          const hid = hospitalIdInput.value ;
+          const pt = pointerInput.value ;
+          const ha = hashInput.value ;
+          updateInstance(userId, hid, pt, ha) ; 
+          //- location.reload();
+        } // else   
+      }) ;
       const queryParams = new URLSearchParams(window.location.search);
       // Get the values of the variables from the query parameters
       const userId = queryParams.get('userId');

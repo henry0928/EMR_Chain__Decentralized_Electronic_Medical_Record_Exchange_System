@@ -46,6 +46,18 @@ class IDMContract extends Contract {
     const role = value["Role"] ;
     return role ;
   } // verify_role()
+
+  async getHealthLevel(ctx, appId) {
+    const iterator = await ctx.stub.getQueryResult("{\"selector\":{\"AppId\":\"" + appId + "\"}}");
+    let res = await iterator.next();
+    const key = res.value.key ;
+    let value = JSON.parse(res.value.value.toString("utf8")) ;
+    await iterator.close() ; // close the iterator
+    if (value["Role"] == "supervisor") 
+      return value["HealthLevel"] ;
+    else
+      return "You are NOT supervisor!! (getHealthLevel) " ;
+  } // getHealthLevel()
   
   async create_identity(ctx, p_key, app_id, did, x509Cipher) {
     const buffer = await ctx.stub.getState(p_key);
@@ -57,12 +69,14 @@ class IDMContract extends Contract {
     // value : { AppId : app_id,
     //           Role : role, 
     //           DID : did, 
+    //           HealthLevel: level 
     //           x509Identity : x509 }
 
     let value = {
       AppId : app_id,
       Role : "patient",
       DID : did,
+      HealthLevel: "none", 
       x509IdentityCipher : x509Cipher
     } ;
     
@@ -83,7 +97,7 @@ class IDMContract extends Contract {
              MSP: mspId } ;   
   } // consent_doc_role()
 
-  async consent_sup_role(ctx, did) {
+  async consent_sup_role(ctx, did, level) {
     const mspId = ctx.clientIdentity.getMSPID() ;
     const iterator = await ctx.stub.getQueryResult("{\"selector\":{\"DID\":\"" + did + "\"}}");
     let res = await iterator.next();
@@ -91,6 +105,7 @@ class IDMContract extends Contract {
     let value = JSON.parse(res.value.value.toString("utf8")) ;
     await iterator.close() ; // close the iterator
     value["Role"] = "supervisor" ;
+    value["HealthLevel"] = level ;
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(value)));
     return { success: "OK (consent_sup_role)",
              MSPID: mspId } ;   
@@ -121,6 +136,7 @@ class IDMContract extends Contract {
     if ( value["Role"] != "supervisor" )
       return { Error: did + " identity is not supervisor!!" } ;
     value["Role"] = "patient" ; // revoke the identity, back to patient
+    value["HealthLevel"] = "none" ; // revoke the HealthLevel, back to patient
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(value)));
     return { success: "OK (revoke_sup_role)",
              MSP: mspId } ;   
