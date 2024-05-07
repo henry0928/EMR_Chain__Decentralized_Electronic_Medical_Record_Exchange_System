@@ -122,7 +122,7 @@ class ACLContract extends Contract {
     return { success : "OK (update_hash)" } ; 
   } // update_hash()
 
-  async authorization(ctx, patient_id, doctor_p_key, patient_signature, doctor_signature, self_level, request_id) {
+  async authorization(ctx, patient_id, patient_p_key, doctor_p_key, patient_signature, doctor_signature, self_level, request_id) {
     // patient_id : 病患app_id
     // doctor_p_key : 想要存取其他醫院health-data的doctor main identity public key
     // signature : patient and doctor signature
@@ -130,11 +130,18 @@ class ACLContract extends Contract {
     let result = {} ;// must be a pair with hospital_id -> url ;
 
     // The patient_signature, hospital_signature are for digital signature use !!!
+    // also patient_p_key and doctor_p_key either
+    const patientRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", patient_p_key, patient_signature], "identity-management");
+    let pRole = patientRes.payload ;
+    pRole = pRole.toString() ;
+    if ( pRole != "patient" )
+      return "You are not patient! (authorization)" ;
+    const doctorRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", doctor_p_key, doctor_signature], "identity-management");
+    let dRole = doctorRes.payload ;
+    dRole = dRole.toString() ;
+    if ( dRole != "doctor" )
+      return "You are not doctor! (authorization)" ; 
 
-    // NOT FINISH! 
-
-    // check(patient_signature, patient_did) ; // authentication the singnature from DID chain
-    // check(hospital_signature, hospital_did) ; // authentication the singnature from DID chain 
     const buffer = await ctx.stub.getState(patient_id) ;
     if (!buffer || !buffer.length) return { error: "(authorization)Patient NOT_FOUND" };
     const buffer_object = JSON.parse(buffer.toString()) ;

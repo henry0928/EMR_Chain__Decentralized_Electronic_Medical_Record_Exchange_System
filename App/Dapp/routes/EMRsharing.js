@@ -164,5 +164,150 @@ router.post('/updateHash', async (req, res) => {
     res.json({ result: "Please create instance first!!"}) ;
 }) ;
 
+router.post('/consent', async (req, res) => {
+  const userId = req.body.userId ;
+  const hospitalId = req.body.hospitalId ;
+  const wallet = await buildWallet(Wallets, walletPath) ;
+  const identity = wallet.get(userId) ;
+  let info ;
+  if (!identity) {
+    const script = `
+    <script>
+      const alertMessage = "Can't find you x509Identity, Please login first!!" ;
+      alert(alertMessage) ;
+      window.location.href = '/EMRsharing' ;
+    </script>
+    `;
+    res.send(script);
+  } // if
+  try {
+    let gateway = new Gateway() ;
+    const ccp = buildCCPOrg1() ;
+    try {
+      await gateway.connect(ccp, {
+        wallet : wallet,
+        identity: userId,
+        discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+      });
+
+      const network = await gateway.getNetwork(AccessControl);
+      const contract = network.getContract(ACL);
+      console.log("Access access control channel......(update_hash)") ;
+      info = await contract.submitTransaction("consent_access", userId, hospitalId) ;
+      if (info)
+        info = JSON.parse(info.toString()) ;
+    } // try 
+    finally {
+      gateway.disconnect();
+    } // finally
+  } // try
+  catch (error) {
+    console.error(`******** FAILED to run the application: ${error}`);
+  } // catch
+  if (info)
+    res.json({ result: info }) ;
+  else
+    res.json({ result: "Please create instance first!!"}) ;
+}) ;
+
+router.post('/revoke', async (req, res) => {
+  const userId = req.body.userId ;
+  const hospitalId = req.body.hospitalId ;
+  const wallet = await buildWallet(Wallets, walletPath) ;
+  const identity = wallet.get(userId) ;
+  let info ;
+  if (!identity) {
+    const script = `
+    <script>
+      const alertMessage = "Can't find you x509Identity, Please login first!!" ;
+      alert(alertMessage) ;
+      window.location.href = '/EMRsharing' ;
+    </script>
+    `;
+    res.send(script);
+  } // if
+  try {
+    let gateway = new Gateway() ;
+    const ccp = buildCCPOrg1() ;
+    try {
+      await gateway.connect(ccp, {
+        wallet : wallet,
+        identity: userId,
+        discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+      });
+
+      const network = await gateway.getNetwork(AccessControl);
+      const contract = network.getContract(ACL);
+      console.log("Access access control channel......(update_hash)") ;
+      info = await contract.submitTransaction("revoke_access", userId, hospitalId) ;
+      if (info)
+        info = JSON.parse(info.toString()) ;
+    } // try 
+    finally {
+      gateway.disconnect();
+    } // finally
+  } // try
+  catch (error) {
+    console.error(`******** FAILED to run the application: ${error}`);
+  } // catch
+  if (info)
+    res.json({ result: info }) ;
+  else
+    res.json({ result: "Please create instance first!!"}) ;
+}) ;
+
+router.post('/authorization', async (req, res) => {
+  const patientId = req.body.patientId ;
+  const patientPublicKey = req.body.patientPublicKey ;
+  const patientSignature = req.body.patientSignature ;
+  const doctorPublicKey = req.body.doctorPublicKey ;
+  const doctorSignature = req.body.doctorSignature ;
+  const requestId = req.body.requestId ;
+  const requestObj = { 
+    [requestId] : "none" 
+  } ;
+  const wallet = await buildWallet(Wallets, walletPath) ;
+  const identity = wallet.get(userId) ;
+  let info ;
+  if (!identity) {
+    const script = `
+    <script>
+      const alertMessage = "Can't find you x509Identity, Please login first!!" ;
+      alert(alertMessage) ;
+      window.location.href = '/EMRsharing' ;
+    </script>
+    `;
+    res.send(script);
+  } // if
+  try {
+    let gateway = new Gateway() ;
+    const ccp = buildCCPOrg1() ;
+    try {
+      await gateway.connect(ccp, {
+        wallet : wallet,
+        identity: userId,
+        discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+      });
+
+      const network = await gateway.getNetwork(AccessControl);
+      const contract = network.getContract(ACL);
+      console.log("Access access control channel......(authorization)") ;
+      info = await contract.submitTransaction("authorization", patientId, patientPublicKey, doctorPublicKey, patientSignature, doctorSignature, 1, requestObj) ;
+      if (info)
+        info = JSON.parse(info.toString()) ;
+    } // try 
+    finally {
+      gateway.disconnect();
+    } // finally
+  } // try
+  catch (error) {
+    console.error(`******** FAILED to run the application: ${error}`);
+  } // catch
+  if (info)
+    res.json({ result: info }) ;
+  else
+    res.json({ result: "Please create instance first!!"}) ;
+}) ;
+
 
 module.exports = router;

@@ -97,9 +97,34 @@ nav a:hover {
   margin-bottom: 10px;
 }
 
+#hospitalIdInput-1,
+#pointerInput,
+#hashInput-1,
+#hospitalIdInput-2,
+#hashInput-2,
+#patientSignatureInput,
+#patientPublicKeyInput,
+#doctorSignatureInput,
+#doctorPublicKeyInput,
+#patientIdInput,
+#requestHospitalIdInput,
+#input-field {
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 #userID,
 #Role {
   width: 50%;
   font-style: italic;
   color: #999;
+}
+
+
+#seperateDiv {
+  display: flex;
+  align-items: stretch;
 }

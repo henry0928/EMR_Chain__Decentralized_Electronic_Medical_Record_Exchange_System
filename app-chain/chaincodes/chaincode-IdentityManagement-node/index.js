@@ -142,12 +142,18 @@ class IDMContract extends Contract {
              MSP: mspId } ;   
   } // revoke_doc_role()
 
-  async authenticate_role(ctx, p_key, signature, role) {
-    // need to use app-id to query the ledger
-    const buffer = await ctx.stub.getState(p_key);
-    if (!buffer || !buffer.length) return { error: "(authenticate_role)USER NOT_FOUND" };
-    let buffer_object = JSON.parse(buffer.toString()) ;
-    // Need to be finish! ( NOT FINISH !)
+  async authenticate_identity(ctx, p_key, signature) {
+    const message = ethers.utils.toUtf8Bytes("message") ;
+    const recoveredAddress = ethers.utils.verifyMessage(message, signature) ;
+    const isVerified = recoveredAddress == p_key ;
+    if ( isVerified ) {
+      const buffer = await ctx.stub.getState(p_key);
+      if (!buffer || !buffer.length) return { error: "(authenticate_identity) Can't find the account, Please regist first!!" };
+      const buffer_object = JSON.parse(buffer.toString()) ;
+      return buffer_object["Role"] ;
+    } // if
+    else 
+      return "Authenticate Fail!!!" ;
   } // authenticate_role
 
   async login(ctx, p_key, signature, message) {

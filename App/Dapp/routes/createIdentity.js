@@ -48,7 +48,7 @@ async function verify(_DID, _messageHash, _signature) {
 
 } // verify()
 
-async function createIdentity(publicKey, did) {
+async function createIdentity(publicKey, did, option1, userKey) {
   let info, key ;
   const app_id = Date.now().toString() ; // tine use for App-chain id
   try {
@@ -60,11 +60,19 @@ async function createIdentity(publicKey, did) {
     const x509Identity = await registerAndEnrollUserV2(caClient, wallet, mspOrg1, app_id); // Enroll the user
     console.log("x509...") ;
     console.log(x509Identity) ;
+    var x509Identity_ciphertext ;
     // 加密
-    key = privateKeyGen(x509Identity["credentials"]) ;
-    console.log("key...") ;
-    console.log(key) ;
-    var x509Identity_ciphertext = AES.encrypt(JSON.stringify(x509Identity), key).toString() ;
+    if (option1) {
+      console.log("key...") ;
+      console.log(userKey) ;
+      x509Identity_ciphertext = AES.encrypt(JSON.stringify(x509Identity), userKey).toString() ;
+    } // if
+    else {
+      key = privateKeyGen(x509Identity["credentials"]) ;
+      console.log("key...") ;
+      console.log(key) ;
+      x509Identity_ciphertext = AES.encrypt(JSON.stringify(x509Identity), key).toString() ;
+    } // else 
     console.log("cipher...") ;
     console.log(x509Identity_ciphertext) ;
 		let gateway = new Gateway();
@@ -143,10 +151,12 @@ router.post('/', async(req, res) => {
   const DID = req.body.DIDInput ;
   const messageHash = req.body.messageHashInput ;
   const signature = req.body.signatureInput ;
+  const userKey = req.body.userKey ;
   const result = await verify(DID, messageHash, signature) ;
-  console.log("still...") ;
+  var option1Checked = req.body.option1 !== undefined;
+  var option2Checked = req.body.option2 !== undefined;
   if (result) {
-    const object = await createIdentity(walletAddress, DID) ;
+    const object = await createIdentity(walletAddress, DID, option1Checked, userKey) ;
     let Info ;
     if (object.hasOwnProperty('success'))
       Info = "Success " + object["success"] + "\\n" + "key: " + object["key"] ;

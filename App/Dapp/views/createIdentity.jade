@@ -30,6 +30,13 @@ html
         br
         label(for='signatureInput') Signature:
         input#signatureInput(type='text' name='signatureInput' readonly='' required='')
+        label
+          input(type="checkbox" id="checkbox1" name="option1" value="Option 1" onclick="toggleInput()")
+          | Input the user defined key to encrypt.
+        label
+          input(type="checkbox" id="checkbox2" name="option2" value="Option 2")
+          | Use default setting to encrypt(app-chain id private-key)
+        input(type="text" id="userKey" name="userKey" style="display: none;")
         button(type='submit') Create Identity
     script.
       const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
@@ -39,6 +46,11 @@ html
       const messageInput = document.getElementById("messageInput");
       const messageHashInput = document.getElementById("messageHashInput");
       const signatureInput = document.getElementById("signatureInput");
+      function toggleInput() {
+        var checkbox = document.getElementById('checkbox1');
+        var input = document.getElementById('userKey');
+        input.style.display = checkbox.checked ? 'block' : 'none';
+      } // toggleInput()
       connectButton.addEventListener("click", async function() {
         if (window.ethereum) {
           const provider = new ethers.providers.Web3Provider(window.ethereum) ;
