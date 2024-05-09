@@ -267,32 +267,22 @@ router.post('/authorization', async (req, res) => {
     [requestId] : "none" 
   } ;
   const wallet = await buildWallet(Wallets, walletPath) ;
-  const identity = wallet.get(userId) ;
   let info ;
-  if (!identity) {
-    const script = `
-    <script>
-      const alertMessage = "Can't find you x509Identity, Please login first!!" ;
-      alert(alertMessage) ;
-      window.location.href = '/EMRsharing' ;
-    </script>
-    `;
-    res.send(script);
-  } // if
+  const cgmh = "cgmh" ;
   try {
     let gateway = new Gateway() ;
     const ccp = buildCCPOrg1() ;
     try {
       await gateway.connect(ccp, {
         wallet : wallet,
-        identity: userId,
+        identity: cgmh,
         discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
       });
 
       const network = await gateway.getNetwork(AccessControl);
       const contract = network.getContract(ACL);
       console.log("Access access control channel......(authorization)") ;
-      info = await contract.submitTransaction("authorization", patientId, patientPublicKey, doctorPublicKey, patientSignature, doctorSignature, 1, requestObj) ;
+      info = await contract.submitTransaction("authorization", patientId, patientPublicKey, doctorPublicKey, patientSignature, doctorSignature, 1, JSON.stringify(requestObj));
       if (info)
         info = JSON.parse(info.toString()) ;
     } // try 

@@ -31,7 +31,8 @@ exports.buildCCPOrg2 = () => {
 	// load the common connection configuration file
 	// const ccpPath = path.resolve(__dirname, '..', '..', 'test-network',
 	// 	'organizations', 'peerOrganizations', 'org2.example.com', 'connection-org2.json');
-	const ccpPath = '../fablo-target/fabric-config/connection-profiles/connection-profile-org2.json';
+	// const ccpPath = '../fablo-target/fabric-config/connection-profiles/connection-profile-org2.json';
+	const ccpPath = '/home/henry/EMR-sharing-Dapp/app-chain/fablo-target/fabric-config/connection-profiles/connection-profile-org2.json';
 	const fileExists = fs.existsSync(ccpPath);
 	if (!fileExists) {
 		throw new Error(`no such file or directory: ${ccpPath}`);

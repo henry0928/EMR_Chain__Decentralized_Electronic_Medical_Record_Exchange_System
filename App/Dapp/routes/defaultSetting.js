@@ -29,7 +29,6 @@ const walletPath2 = path.join(__dirname, 'wallet2');
 const org1ADMIN = 'org1ADMIN';
 const org2ADMIN = 'org2ADMIN';
 const cgmhPublicKey = "0x3E014E5c311a7D6F652CA4F8bb016f4338A44118" ; // 倒數第二個帳號
-const henryPublicKey = "0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E" ; // 倒數第三個帳號
 
 
 
@@ -41,29 +40,27 @@ async function main() {
 	try {
 		// build an in memory object with the network configuration (also known as a connection profile)
         const ccp = buildCCPOrg1();
-		// const ccp2 = buildCCPOrg2();
+		const ccp2 = buildCCPOrg2();
 
 		// build an instance of the fabric ca services client based on
 		// the information in the network configuration
 
 		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
-		// const ca2Client = buildCAClient(FabricCAServices, ccp2, 'ca.org2.example.com');
-		// const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org2.example.com');
+		const ca2Client = buildCAClient(FabricCAServices, ccp2, 'ca.org2.example.com');
 
 		// setup the wallet to hold the credentials of the application user
 		const wallet = await buildWallet(Wallets, walletPath);
-		// const wallet2 = await buildWallet(Wallets, walletPath2);
+		const wallet2 = await buildWallet(Wallets, walletPath2);
 
 		// in a real application this would be done on an administrative flow, and only once
 		await enrollAdmin(caClient, wallet, mspOrg1);
-		// await enrollAdmin(ca2Client, wallet2, mspOrg2);
+		await enrollAdmin(ca2Client, wallet2, mspOrg2);
 
 		// in a real application this would be done only when a new user was required to be added
 		// and would be part of an administrative flow
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1ADMIN); // Enroll the org1ADMIN
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, "cgmh"); // Enroll the 長庚醫院
-		await registerAndEnrollUser(caClient, wallet, mspOrg1, "henry"); // Enroll the 長庚醫院‘s doctor
-		// await registerAndEnrollUser(ca2Client, wallet2, mspOrg2, org2ADMIN); // Enroll the org2ADMIN
+		await registerAndEnrollUser(ca2Client, wallet2, mspOrg2, org2ADMIN); // Enroll the org2ADMIN
 
 		// Create a new gateway instance for interacting with the fabric network.
 		// In a real application this would be done as the backend server session is setup for

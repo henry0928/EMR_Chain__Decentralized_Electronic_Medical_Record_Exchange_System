@@ -16,12 +16,15 @@ html
           li.link(style='float:right')
             a(href='/login') EMR-sharing-login
           li.link(style='float:right')
+            a(href='/consentIdentity') Consent Identity
+          li.link(style='float:right')
             a(href='/userModule') User module
           li.link(style='float:right')
             a(href='/') DID-Dashboard
     main
       .dashboard
-        .user-info-box
+        //- .user-info-box
+        .container
           h2.user-info-title User Information
           p#user-info-message Please Login First.
           .user-info-details
@@ -32,8 +35,6 @@ html
               span.user-info-label Role: 
               span#Role Patient/Doctor/Supervisor 
             button#ReloadButton(type='button') Reload Page
-            br
-            button#consentHealthProviderButton(type='button') Consent HealthProvider Identity
         - for (var i = 0; i < 5; i++)
           - if (i == 0)
               .container

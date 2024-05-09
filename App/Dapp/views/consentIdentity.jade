@@ -1,0 +1,132 @@
+doctype html
+html
+  head
+    title EMR-sharing Dashboard
+    link(rel='stylesheet', href='stylesheets/EMRsharing.css')
+    script(src='https://cdn.ethers.io/lib/ethers-5.2.umd.min.js' type='application/javascript')
+    script(src='javascripts/abiScripts.js')
+  body
+    header
+      nav
+        ul
+          li.home
+            a(href='/EMRsharing') EMR-sharing
+          li.link(style='float:right')
+            a(href='/createIdentity') Create Identity
+          li.link(style='float:right')
+            a(href='/login') EMR-sharing-login
+          li.link(style='float:right')
+            a(href='/consentIdentity') Consent Identity
+          li.link(style='float:right')
+            a(href='/userModule') User module
+          li.link(style='float:right')
+            a(href='/') DID-Dashboard
+    main
+      .dashboard
+        .user-info-box
+          h2.user-info-title User Information
+          .user-info-details
+            p.user-info-item
+              span.user-info-label Wallet Address: 
+              span#walletAddress
+            p.user-info-item
+              span.user-info-label DID: 
+              span#DID
+            button#ReloadButton(type='button') Reload Page
+        .section
+          h2 Section 1
+          form(id='uploadForm1' action='/consentIdentity/doctor' method='POST' enctype='multipart/form-data')
+            input(type='hidden' id='DIDInput' name='DID')
+            input(type='file' name='file1')
+            input(type='submit' value='Upload')
+        .section
+          h2 Section 2
+          form(id='uploadForm2' action='/consentIdentity/supervisor' method='POST' enctype='multipart/form-data')
+            input(type='hidden' id='DIDInput2' name='DID')
+            input(type='file' name='file2')
+            input(type='submit' value='Upload')
+    script.
+      const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
+      const walletAddressElement = document.getElementById("walletAddress");
+      const DIDElement = document.getElementById("DID");
+      const activeFunction = async function() {
+        if (window.ethereum) {
+            const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner() ;
+            const userAddress = await signer.getAddress() ;
+            walletAddressElement.textContent = userAddress;
+            const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+            const DID = await contract.getId() ;
+            DIDElement.textContent = DID;
+            document.getElementById('DIDInput').value = DID;
+            document.getElementById('DIDInput2').value = DID;
+        } // if 
+        else 
+          alert('Please download Metamask');
+      } ;
+      async function uploadFile1() {
+        const form = document.getElementById('uploadForm1');
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          } // if  
+          else {
+            const data = await response.json();
+            console.log(data); // log the response data to the console
+            // Here you can handle the response data and show it to the user
+            // For example:
+            alert(`File uploaded successfully. Server responded with: ${JSON.stringify(data["result"])}`);
+            window.location.href = "/EMRsharing" ;
+          } // else 
+        } catch (error) {
+          console.error('Error:', error);
+          alert(`File upload failed. Error: ${error}`);
+        }
+      } // UploadFile1
+
+
+      async function uploadFile2() {
+        const form = document.getElementById('uploadForm2');
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          } // if  
+          else {
+            const data = await response.json();
+            console.log(data); // log the response data to the console
+            // Here you can handle the response data and show it to the user
+            // For example:
+            alert(`File uploaded successfully. Server responded with: ${JSON.stringify(data["result"])}`);
+            window.location.href = "/EMRsharing" ;
+          } // else 
+        } catch (error) {
+          console.error('Error:', error);
+          alert(`File upload failed. Error: ${error}`);
+        }
+      } // UploadFile2
+
+
+      activeFunction() ;
+      document.getElementById('uploadForm1').addEventListener('submit', function(e) {
+        e.preventDefault(); // prevent the form from submitting normally
+        uploadFile1();
+      });
+      document.getElementById('uploadForm2').addEventListener('submit', function(e) {
+        e.preventDefault(); // prevent the form from submitting normally
+        uploadFile2();
+      });

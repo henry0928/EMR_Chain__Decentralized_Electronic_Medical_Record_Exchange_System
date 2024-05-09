@@ -85,7 +85,6 @@ class IDMContract extends Contract {
   } // create_identity()
 
   async consent_doc_role(ctx, did) {
-    const mspId = ctx.clientIdentity.getMSPID() ;
     const iterator = await ctx.stub.getQueryResult("{\"selector\":{\"DID\":\"" + did + "\"}}");
     let res = await iterator.next();
     const key = res.value.key ;
@@ -94,11 +93,10 @@ class IDMContract extends Contract {
     value["Role"] = "doctor" ;
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(value)));
     return { success: "OK (consent_doc_role)",
-             MSP: mspId } ;   
+             DID: did } ;   
   } // consent_doc_role()
 
   async consent_sup_role(ctx, did, level) {
-    const mspId = ctx.clientIdentity.getMSPID() ;
     const iterator = await ctx.stub.getQueryResult("{\"selector\":{\"DID\":\"" + did + "\"}}");
     let res = await iterator.next();
     const key = res.value.key ;
@@ -108,7 +106,7 @@ class IDMContract extends Contract {
     value["HealthLevel"] = level ;
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(value)));
     return { success: "OK (consent_sup_role)",
-             MSPID: mspId } ;   
+             DID: did } ;   
   } // consent_sup_role()
 
   async revoke_doc_role(ctx, did) {
