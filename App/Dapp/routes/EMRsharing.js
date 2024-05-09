@@ -9,7 +9,8 @@ const ACL = "ACL" ;
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('EMRsharing', { title: 'Express' });
+  // res.render('EMRsharing', { title: 'Express' });
+  res.render('EMRsharing', req.query);
 });
 
 router.post('/getACL', async (req, res) => {

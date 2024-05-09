@@ -111,8 +111,8 @@ async function createIdentity(publicKey, did, option1, userKey) {
 			// Build a network instance based on the channel where the smart contract is deployed
 			const network = await gateway.getNetwork(AccessControl);
 			// Get the contract from the network.
-			const contract = network.getContract(ACL)　;
-			let info = await contract.submitTransaction('create_patient_instance', app_id)　;
+			const contract = network.getContract(ACL) ;
+			let info = await contract.submitTransaction('create_patient_instance', app_id);
 			console.log(JSON.parse(info.toString())) ;
       info = await contract.submitTransaction('get', app_id);
 			console.log(JSON.parse(info.toString()));

@@ -60,20 +60,23 @@ router.post('/', async(req, res) => {
     const wallet = await buildWallet(Wallets, walletPath);
     const walletAddress = req.body.walletAddressInput ;
     const signature = req.body.signatureInput ;
-    const message = req.body.messageInput ;
+    // const message = req.body.messageInput ;
     const encryptKey = req.body.encryptKeyInput ;
-    const resultObject = await login(walletAddress, signature, message) ;
-    const bytes = AES.decrypt(encryptKey, '1234');
-    const privateKeyPartial = bytes.toString(encUtf8);
-    resultObject["app-chain PrivateKey"] = privateKeyPartial ;
+    const resultObject = await login(walletAddress, signature, "message") ;
+    // const bytes = AES.decrypt(encryptKey, '1234');
+    // const privateKeyPartial = bytes.toString(encUtf8);
+    // resultObject["app-chain PrivateKey"] = privateKeyPartial ;
     // 解密user x509Identity
-    var _bytes = AES.decrypt(resultObject["x509IdentityCipher"], privateKeyPartial) ;
+    var _bytes = AES.decrypt(resultObject["x509IdentityCipher"], encryptKey) ;
     const userX509Identity = JSON.parse(_bytes.toString(encUtf8)) ;
+    console.log("x509Identity....") ;
+    console.log(userX509Identity) ;
     await wallet.put(resultObject["AppId"], userX509Identity) ;
     const userId = resultObject["AppId"] ;
     const role = resultObject["Role"] ;
-    const redirectUrl = `/EMRsharing?userId=${userId}&role=${role}`;
-    res.redirect(redirectUrl);
+    // const redirectUrl = `/EMRsharing?userId=${userId}&role=${role}`;
+    // res.redirect(redirectUrl);
+    res.render('EMRsharing', { userId: userId, role: role });
 });
 
 module.exports = router;

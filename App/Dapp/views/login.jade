@@ -19,17 +19,14 @@ html
       form#bindAccountForm(action='/login', method='POST')
         label(for='walletAddressInput') Wallet Address:
         input#walletAddressInput(type='text' name='walletAddressInput' readonly='' required='')
-        label(for='encryptKeyInput') encryptKey:
-        input#encryptKeyInput(type='text' name='encryptKeyInput' required='' placeholder='Enter Encrypted App-Chain Private Key')
         button#connectButton(type='button')
           img(src='images/MetaMask_Horizontal.svg', alt='MetaMask Logo')
           | 
+        label(for='encryptKeyInput') encryptKey:
+        input#encryptKeyInput(type='password' name='encryptKeyInput' required='' placeholder='Enter the setting encrypt key')
         br
         br
-        label(for='messageInput') message(need to input by user):
-        input#messageInput(type='text' name='messageInput' required='')
         button#SignButton(type='button') Sign
-        br
         br
         label(for='signatureInput') Signature:
         input#signatureInput(type='text' name='signatureInput' readonly='' required='')
@@ -78,14 +75,10 @@ html
         if (window.ethereum) {
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
-          if (messageInput.value) {
-            let message = ethers.utils.toUtf8Bytes(messageInput.value) ;
-            const signature = await signer.signMessage(message) ;
-            signatureInput.value = signature ;
-            const recoveredAddress = await ethers.utils.verifyMessage(message, signature) ;
-          } // if
-          else 
-            alert("Need to input the message!!!");
+          let message = ethers.utils.toUtf8Bytes("message") ;
+          const signature = await signer.signMessage(message) ;
+          signatureInput.value = signature ;
+          const recoveredAddress = await ethers.utils.verifyMessage(message, signature) ;
         } // if 
         else 
           alert('Please download Metamask');

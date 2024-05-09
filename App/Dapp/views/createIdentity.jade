@@ -20,8 +20,6 @@ html
           | 
         br
         br
-        label(for='messageInput') message(need to input by user):
-        input#messageInput(type='text' name='messageInput' required='')
         button#SignButton(type='button') Sign
         br
         br
@@ -36,7 +34,7 @@ html
         label
           input(type="checkbox" id="checkbox2" name="option2" value="Option 2")
           | Use default setting to encrypt(app-chain id private-key)
-        input(type="text" id="userKey" name="userKey" style="display: none;")
+        input(type="password" id="userKey" name="userKey" style="display: none;")
         button(type='submit') Create Identity
     script.
       const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
@@ -75,14 +73,10 @@ html
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
           const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
-          if (messageInput.value) {
-            const messageHash = ethers.utils.hashMessage(messageInput.value);
-            const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
-            messageHashInput.value = messageHash;
-            signatureInput.value = signature;
-          } // if
-          else 
-            alert("Need to input the message!!!");
+          const messageHash = ethers.utils.hashMessage("message");
+          const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+          messageHashInput.value = messageHash;
+          signatureInput.value = signature;
         } // if 
         else 
           alert('Please download Metamask');

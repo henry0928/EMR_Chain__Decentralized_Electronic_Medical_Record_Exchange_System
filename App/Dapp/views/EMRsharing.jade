@@ -30,10 +30,10 @@ html
           .user-info-details
             p.user-info-item
               span.user-info-label UserId: 
-              span#userID
+              span#userID #{userId}
             p.user-info-item
               span.user-info-label Role: 
-              span#Role Patient/Doctor/Supervisor 
+              span#Role #{role}
             button#ReloadButton(type='button') Reload Page
         - for (var i = 0; i < 5; i++)
           - if (i == 0)
@@ -42,24 +42,44 @@ html
                 p The overview about your EMRsharing.
                 pre#data
           - else if (i == 1)
-              .container
-                h2 Consent Access or Revoke Access
-                p You can choose to Consent all level to access or only allow higher health-provider level to access
-                select#consentSelect(name='App')
-                  option(value='' selected='') Choose the Organization
-                  option(value='cgmh') 長庚醫院cgmh
-                  option(value='chuh') 中國醫藥大學chuh
-                  option(value='ntuh') 臺大醫院ntuh
-                &nbsp;
-                button#consentButton(type='button') Consent
-                &nbsp; &nbsp;
-                select#revokeSelect(name='App')
-                  option(value='' selected='') Choose the Organization
-                  option(value='cgmh') 長庚醫院cgmh
-                  option(value='chuh') 中國醫藥大學chuh
-                  option(value='ntuh') 臺大醫院ntuh
-                &nbsp;
-                button#revokeButton(type='button') Revoke
+              -if (role === "patient")
+                .container
+                  h2 Consent Access or Revoke Access
+                  p You can choose to Consent all level to access or only allow higher health-provider level to access
+                  select#consentSelect(name='App')
+                    option(value='' selected='') Choose the Organization
+                    option(value='cgmh') 長庚醫院cgmh
+                    option(value='chuh') 中國醫藥大學chuh
+                    option(value='ntuh') 臺大醫院ntuh
+                  &nbsp;
+                  button#consentButton(type='button') Consent
+                  &nbsp; &nbsp;
+                  select#revokeSelect(name='App')
+                    option(value='' selected='') Choose the Organization
+                    option(value='cgmh') 長庚醫院cgmh
+                    option(value='chuh') 中國醫藥大學chuh
+                    option(value='ntuh') 臺大醫院ntuh
+                  &nbsp;
+                  button#revokeButton(type='button') Revoke
+              -else 
+                .container-invisible
+                  h2 Consent Access or Revoke Access
+                  p You can choose to Consent all level to access or only allow higher health-provider level to access
+                  select#consentSelect(name='App')
+                    option(value='' selected='') Choose the Organization
+                    option(value='cgmh') 長庚醫院cgmh
+                    option(value='chuh') 中國醫藥大學chuh
+                    option(value='ntuh') 臺大醫院ntuh
+                  &nbsp;
+                  button#consentButton(type='button') Consent
+                  &nbsp; &nbsp;
+                  select#revokeSelect(name='App')
+                    option(value='' selected='') Choose the Organization
+                    option(value='cgmh') 長庚醫院cgmh
+                    option(value='chuh') 中國醫藥大學chuh
+                    option(value='ntuh') 臺大醫院ntuh
+                  &nbsp;
+                  button#revokeButton(type='button') Revoke
           - else if (i == 2)
               .container
                 h2 Update instance or Update hash
@@ -85,7 +105,44 @@ html
                 br
                 button#updateHashButton(type='button') Update hash
           - else if (i == 3)
+            -if (role === "doctor")
               .container
+                h2 Authorization
+                p Try to get the authorization from another hospital
+                div#seperateDiv
+                  div(style="display: inline-block; flex: 1;")
+                    label(for='patientId') patientId: 
+                    br
+                    input#patientIdInput(type='text' name='patientId' required='')
+                    br
+                    label(for='requestHospitalId') requestHospitalId: 
+                    input#requestHospitalIdInput(type='text' name='requestHospitalId' required='')
+                    br
+                    br
+                    label(for='patientPublicKeyInput') patient_PublicKey: 
+                    input#patientPublicKeyInput(type='text' name='patientPublicKeyInput' readonly='' required='')
+                    br
+                    label(for='patientSignatureInput') patientSignature: 
+                    input#patientSignatureInput(type='text' name='patientSignatureInput' readonly='' required='')
+                    br
+                    button#patientConnectButton(type='button') Connect
+                    &nbsp; &nbsp;
+                    button#patientSignButton(type='button') Sign
+                    br
+                    br
+                    label(for='doctorPublicKeyInput') doctor_PublicKey: 
+                    input#doctorPublicKeyInput(type='text' name='doctorPublicKeyInput' readonly='' required='')
+                    br
+                    label(for='doctorSignatureInput') doctorSignature: 
+                    input#doctorSignatureInput(type='text' name='doctorSignatureInput' readonly='' required='')
+                    br 
+                    button#doctorConnectButton(type='button') Connect
+                    &nbsp; &nbsp;
+                    button#doctorSignButton(type='button') Sign
+                  div(style="flex: 1; display: flex; justify-content: center; align-items: center; height: 500px;")
+                    button#authorizationButton(type='button') Authorization
+            -else
+              .container-invisible
                 h2 Authorization
                 p Try to get the authorization from another hospital
                 div#seperateDiv
@@ -436,11 +493,12 @@ html
       // Get the values of the variables from the query parameters
       const userId = queryParams.get('userId');
       const role = queryParams.get('role');
-      if (userId)
-        userIdElement.textContent = userId ;
-      if (role)
-        RoleElement.textContent = role ;
-      if (role && userId) {
+      //- if (userId)
+      //-   userIdElement.textContent = userId ;
+      //- if (role)
+      //-   RoleElement.textContent = role ;
+      if (userId && role) {
+        //- userId = userIdElement.textContent ;
         userMessageElement.textContent = "Please Enjoy!!" ;
         getACL(userId);
       } // if 
