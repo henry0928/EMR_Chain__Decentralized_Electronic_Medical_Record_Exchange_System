@@ -29,6 +29,12 @@ class TSRContract extends Contract {
     console.log(buffer_object) ; 
     return buffer_object;
   } // for testing the ledger 
+
+  async record_publicKey(ctx, patient_id, publicKey) {
+    const mixId = patient_id + "public" ;
+    await ctx.stub.putState(mixId, Buffer.from(publicKey));
+    return "record_publicKey() Successfully" ;
+  } // record_publicKey()
   
   async record(ctx, patient_id, dp, dc, resource, purpose, status) {
     // THE DATA-STRUCTURE of Identity mapping !!! 

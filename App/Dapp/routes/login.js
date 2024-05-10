@@ -74,9 +74,9 @@ router.post('/', async(req, res) => {
     await wallet.put(resultObject["AppId"], userX509Identity) ;
     const userId = resultObject["AppId"] ;
     const role = resultObject["Role"] ;
-    // const redirectUrl = `/EMRsharing?userId=${userId}&role=${role}`;
-    // res.redirect(redirectUrl);
-    res.render('EMRsharing', { userId: userId, role: role });
+    const redirectUrl = `/EMRsharing?userId=${userId}&role=${role}`;
+    res.redirect(redirectUrl);
+    // res.render('EMRsharing', { userId: userId, role: role });
 });
 
 module.exports = router;

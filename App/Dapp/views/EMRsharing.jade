@@ -37,11 +37,16 @@ html
             button#ReloadButton(type='button') Reload Page
         - for (var i = 0; i < 5; i++)
           - if (i == 0)
+            - if (role === "patient")
               .container
                 h2 AccessControl Instance Overview
                 p The overview about your EMRsharing.
                 pre#data
-          - else if (i == 1)
+            - else
+              .container-invisible
+                h2 AccessControl Instance Overview
+                p The overview about your EMRsharing.
+          - else if (i == 1) // consent access
               -if (role === "patient")
                 .container
                   h2 Consent Access or Revoke Access
@@ -80,7 +85,8 @@ html
                     option(value='ntuh') 臺大醫院ntuh
                   &nbsp;
                   button#revokeButton(type='button') Revoke
-          - else if (i == 2)
+          - else if (i == 2) // Update instance and hash
+            - if (role === "doctor") 
               .container
                 h2 Update instance or Update hash
                 p Upload the new instance or the updated hash value
@@ -104,7 +110,31 @@ html
                 input#hashInput-2(type='text' name='hashInput-2' required='')
                 br
                 button#updateHashButton(type='button') Update hash
-          - else if (i == 3)
+            - else
+              .container-invisible
+                h2 Update instance or Update hash
+                p Upload the new instance or the updated hash value
+                p NEED TO LOGIN with "doctor" ROLE!!!
+                label(for='hospitalIdInput') hospitalId: 
+                input#hospitalIdInput-1(type='text' name='hospitalIdInput-1' required='')
+                br
+                label(for='pointerInput') pointer: 
+                input#pointerInput(type='text' name='pointerInput' required='')
+                br
+                label(for='hashInput') hash:
+                input#hashInput-1(type='text' name='hashInput-1' required='')
+                br
+                button#updateInsatnceButton(type='button') Update instance
+                br
+                br
+                label(for='hospitalIdInput') hospitalId: 
+                input#hospitalIdInput-2(type='text' name='hospitalIdInput-2' required='')
+                br
+                label(for='hashInput') hash: 
+                input#hashInput-2(type='text' name='hashInput-2' required='')
+                br
+                button#updateHashButton(type='button') Update hash
+          - else if (i == 3) // Authorization
             -if (role === "doctor")
               .container
                 h2 Authorization

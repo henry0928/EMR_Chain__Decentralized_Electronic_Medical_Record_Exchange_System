@@ -1,5 +1,7 @@
 const { Contract } = require("fabric-contract-api");
-const crypto = require("crypto");
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
 // const shim = require('fabric-shim');
 
 class ACLContract extends Contract {
@@ -142,6 +144,22 @@ class ACLContract extends Contract {
     if ( dRole != "doctor" )
       return "You are not doctor! (authorization)" ; 
 
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
+      namedCurve: 'prime256v1' // This curve is widely used for ECC
+    });
+
+    const publicKeyString = publicKey.export({
+      type: 'spki',
+      format: 'pem'
+    });
+
+    // Define the payload
+    const payload = {
+      id: 1,
+      name: 'EMRsharingSystem',
+      email: 'EMRsharing@example.com',
+    };
+
     const buffer = await ctx.stub.getState(patient_id) ;
     if (!buffer || !buffer.length) return { error: "(authorization)Patient NOT_FOUND" };
     const buffer_object = JSON.parse(buffer.toString()) ;
@@ -152,8 +170,10 @@ class ACLContract extends Contract {
       if ( !key ) return { error : "(authorization)Request hospital_id NOT_FOUND" } ;
       let req_level = buffer_object[key]["level"] ;
       if ( buffer_object[key]["open_access"] === false ) {
-        if ( self_level > Number(req_level) ) 
-          result[key] = "Access Denied" ; // 因層級太低因此無法取得權限
+        if ( self_level > Number(req_level) ) {
+          result["error"] = "Access Denied( Authorization() Fail )" ; // 因層級太低因此無法取得權限
+          return result ;
+        } // if  
         else {
           result[key] = buffer_object[key]["pointer"] ;
           // console.log("first else") ;
@@ -165,6 +185,14 @@ class ACLContract extends Contract {
       } // else 
     } // for 
 
+    // Sign the JWT
+    const token = jwt.sign(payload, privateKey, { algorithm: 'ES256', expiresIn: '1h' });
+    const response = await ctx.stub.invokeChaincode("TSR", ["record_publicKey", patient_id, publicKeyString], "transaction-record");
+    let publicKeyInfo = response.payload ;
+    publicKeyInfo = publicKeyInfo.toString() ;
+    result["recordInfo"] = publicKeyInfo ;
+    result["token"] = token ;
+    result["success"] = "Authorization() ok!" ;
     return result ;
   } // authorzation()
 
