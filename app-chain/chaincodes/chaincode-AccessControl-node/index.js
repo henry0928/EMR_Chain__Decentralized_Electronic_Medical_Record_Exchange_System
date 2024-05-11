@@ -45,6 +45,12 @@ class ACLContract extends Contract {
       
   } // beforeTransaction()
 
+  async get_public(ctx, key) {
+    const buffer = await ctx.stub.getState(key);
+    if (!buffer || !buffer.length) return { error: "get NOT_FOUND" };
+    return buffer.toString();
+  } // for testing the ledger 
+
   async get(ctx, key) {
     const buffer = await ctx.stub.getState(key);
     if (!buffer || !buffer.length) return { error: "get NOT_FOUND" };
@@ -86,7 +92,8 @@ class ACLContract extends Contract {
     // commit by another org)
     const _creater = ctx.clientIdentity.getAttributeValue("user_id") ; 
     let value = {
-      Creater : _creater // To record the creator of access control instance 
+      Creater : _creater, // To record the creator of access control instance 
+      publicKey : "none"
     } ;
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));
@@ -171,7 +178,7 @@ class ACLContract extends Contract {
       let req_level = buffer_object[key]["level"] ;
       if ( buffer_object[key]["open_access"] === false ) {
         if ( self_level > Number(req_level) ) {
-          result["error"] = "Access Denied( Authorization() Fail )" ; // 因層級太低因此無法取得權限
+          result["result"] = "Access Denied( Authorization() Fail )" ; // 因層級太低因此無法取得權限
           return result ;
         } // if  
         else {
@@ -187,12 +194,11 @@ class ACLContract extends Contract {
 
     // Sign the JWT
     const token = jwt.sign(payload, privateKey, { algorithm: 'ES256', expiresIn: '1h' });
-    const response = await ctx.stub.invokeChaincode("TSR", ["record_publicKey", patient_id, publicKeyString], "transaction-record");
-    let publicKeyInfo = response.payload ;
-    publicKeyInfo = publicKeyInfo.toString() ;
-    result["recordInfo"] = publicKeyInfo ;
+    const mixId = patient_id + "public" ;
+    await ctx.stub.putState(mixId, Buffer.from(publicKeyString)); // set up the token publicKey
+    result["recordInfo"] = "successful record publicKey" ;
     result["token"] = token ;
-    result["success"] = "Authorization() ok!" ;
+    result["result"] = "Authorization() ok!" ;
     return result ;
   } // authorzation()
 

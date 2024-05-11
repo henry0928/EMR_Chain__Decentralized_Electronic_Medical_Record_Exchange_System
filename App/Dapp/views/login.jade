@@ -11,7 +11,7 @@ html
       h1 App-chain Login
         div#notice
             p.notice-title This is a notice for all users. Please read and accept before continuing.
-            p.notice 您的X509Identity將會被醫院使用 透過醫院金鑰加密的方式將確保您的私鑰會進行秘密傳輸
+            p.notice 您是否同意您的X509Identity將會被醫院使用 醫院會暫存您的x509Identity並且執行你要求之工作 完成操作後將會刪除您的x509Identity
         div#accept
             input(type='checkbox', id='acceptCheckbox')
             label(for='acceptCheckbox') I accept the notice.
@@ -42,31 +42,11 @@ html
       const signatureInput = document.getElementById("signatureInput");
       connectButton.addEventListener("click", async function() {
         if (window.ethereum) {
-          if (encryptKeyInput.value) {
-            const provider = new ethers.providers.Web3Provider(window.ethereum) ;
-            await provider.send("eth_requestAccounts", []);
-            const signer = provider.getSigner() ;
-            const userAddress = await signer.getAddress() ;
-            walletAddressInput.value = userAddress;
-            
-          } // if
-          else 
-            alert("Please enter the privateKey first!!") ;
-          //- const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer) ;
-          //- try {
-          //-   PIcontractAddress = await contract.getAccessManagerAddress(userAddress) ; 
-          //- } // try 
-          //- catch (error) {
-          //-   alert(error) ;
-          //- } // catch
-          //- const contract2 = new ethers.Contract(PIcontractAddress, PersonalIdentityAbi, signer) ;
-          //- try {
-          //-   const encryptKey = await contract2.get_app_private("CGMF") ; // pretend the org is "CGMF" 長庚醫院
-          //-   encryptKeyInput.value = encryptKey ;
-          //- } // try 
-          //- catch (error) {
-          //-   alert(error) ;
-          //- } // catch
+          const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+          await provider.send("eth_requestAccounts", []);
+          const signer = provider.getSigner() ;
+          const userAddress = await signer.getAddress() ;
+          walletAddressInput.value = userAddress;
         } // if 
         else 
           alert('Please download Metamask');

@@ -107,6 +107,8 @@ nav a:hover {
   margin-bottom: 10px;
 }
 
+#patientIdInput-1,
+#patientIdInput-2,
 #hospitalIdInput-1,
 #pointerInput,
 #hashInput-1,

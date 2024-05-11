@@ -1,4 +1,5 @@
 var express = require('express');
+const fetch = require('node-fetch');
 var router = express.Router();
 const path = require('path');
 const { Gateway, Wallets } = require('fabric-network');
@@ -294,8 +295,35 @@ router.post('/authorization', async (req, res) => {
   catch (error) {
     console.error(`******** FAILED to run the application: ${error}`);
   } // catch
-  if (info)
-    res.json({ result: info }) ;
+  if (info) {
+    const returnInfo = {
+      result: info["result"],
+      PublicKeyRecord: info["recordInfo"],
+      PublicKey: info["publicKey"]
+    } ;
+    res.json({ result: returnInfo }) ;
+    if (info[requestId]) { // which means authorization successs!!!
+      console.log(info[requestId]) ;
+      console.log(info["token"]) ;
+      let payload = {
+        patientId: patientId,
+        token: info["token"]
+      };
+      
+      let response = await fetch('http://140.113.207.45:9999/verifyModule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      let data = await response.json();
+      console.log("Final Answer...") ;
+      console.log(data) ;
+
+    } // if 
+  } // if   
   else
     res.json({ result: "Please create instance first!!"}) ;
 }) ;
