@@ -33,9 +33,9 @@ class ACLContract extends Contract {
       } // if     
     } // if
     // else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only health-provider(doctor) can update
-    //   // const response = await ctx.stub.invokeChaincode("IDM", ["verify_role", commit_id], "identity-management");
-    //   // let role = response.payload ;
-    //   // role = role.toString() ;
+    //   const response = await ctx.stub.invokeChaincode("IDM", ["verify_role", commit_id], "identity-management");
+    //   let role = response.payload ;
+    //   role = role.toString() ;
     //   // if ( role != "doctor" ) {
     //   //   const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong role: " + role + " ) " +  "(" + input["fcn"] + ")" ;
     //   //   throw new Error(log) ;    
@@ -92,8 +92,7 @@ class ACLContract extends Contract {
     // commit by another org)
     const _creater = ctx.clientIdentity.getAttributeValue("user_id") ; 
     let value = {
-      Creater : _creater, // To record the creator of access control instance 
-      publicKey : "none"
+      Creater : _creater // To record the creator of access control instance 
     } ;
 
     await ctx.stub.putState(patient_id, Buffer.from(JSON.stringify(value)));

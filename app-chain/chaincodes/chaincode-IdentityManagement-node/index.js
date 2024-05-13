@@ -58,6 +58,13 @@ class IDMContract extends Contract {
     else
       return "You are NOT supervisor!! (getHealthLevel) " ;
   } // getHealthLevel()
+
+  async get_appId(ctx, key) {
+    const buffer = await ctx.stub.getState(key);
+    if (!buffer || !buffer.length) return { error: "get_appId NOT_FOUND" };
+    let buffer_object = JSON.parse(buffer.toString()) ;
+    return buffer_object["AppId"] ;
+  } // get_appId()
   
   async create_identity(ctx, p_key, app_id, did, x509Cipher) {
     const buffer = await ctx.stub.getState(p_key);

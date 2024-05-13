@@ -1,0 +1,34 @@
+{
+    "resourceType": "Practitioner",
+    "identifier": [
+      {
+        "system": "http://hospital/practitioners",
+        "value": "doc123"
+      }
+    ],
+    "active": true,
+    "name": [
+      {
+        "family": "Ball",
+        "given": [
+          "Lamelo"
+        ],
+        "prefix": [
+          "Dr."
+        ]
+      }
+    ],
+    "gender": "male",
+    "birthDate": "1990-03-18",
+    "communication": [
+      {
+        "coding": [
+          {
+            "system": "urn:ietf:bcp:47",
+            "code": "en-US",
+            "display": "English (United States)"
+          }
+        ]
+      }
+    ]
+  }

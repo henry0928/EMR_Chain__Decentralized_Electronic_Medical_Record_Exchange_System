@@ -1,0 +1,25 @@
+{
+    "resourceType": "MedicationRequest",
+    "status": "active",
+    "intent": "order",
+    "medicationCodeableConcept": {
+      "coding": [
+        {
+          "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+          "code": "314076",
+          "display": "Amoxicillin 500mg Capsule"
+        }
+      ]
+    },
+    "subject": {
+      "reference": "Patient/144"
+    },
+    "requester": {
+      "reference": "Practitioner/146"
+    },
+    "dosageInstruction": [
+      {
+        "text": "Take 1 capsule by mouth 3 times a day"
+      }
+    ]
+  }

@@ -13,6 +13,7 @@ var createIdentityRouter = require('./routes/createIdentity');
 var loginRouter = require('./routes/login');
 var consentIdentityRouter = require('./routes/consentIdentity');
 var verifyModuleRouter = require('./routes/verifyModule');
+var transactionRecordRouter = require('./routes/transactionRecord');
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use('/EMRsharing', EMRsharingRouter);
 app.use('/createIdentity', createIdentityRouter);
 app.use('/consentIdentity', consentIdentityRouter);
 app.use('/verifyModule', verifyModuleRouter);
+app.use('/transactionRecord', transactionRecordRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

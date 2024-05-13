@@ -301,13 +301,14 @@ router.post('/authorization', async (req, res) => {
       PublicKeyRecord: info["recordInfo"],
       PublicKey: info["publicKey"]
     } ;
-    res.json({ result: returnInfo }) ;
+    // res.json({ result: returnInfo }) ;
     if (info[requestId]) { // which means authorization successs!!!
       console.log(info[requestId]) ;
       console.log(info["token"]) ;
       let payload = {
         patientId: patientId,
-        token: info["token"]
+        token: info["token"],
+        address: info[requestId]
       };
       
       let response = await fetch('http://140.113.207.45:9999/verifyModule', {
@@ -319,8 +320,19 @@ router.post('/authorization', async (req, res) => {
       });
       
       let data = await response.json();
-      console.log("Final Answer...") ;
-      console.log(data) ;
+      // res.json(data) ;
+      const _resource = data["result"][0]["resource"];
+      
+      const resData = {
+        resourceType: JSON.stringify(_resource["resourceType"]),
+        meta: JSON.stringify(_resource["meta"]),
+        status: JSON.stringify(_resource["status"]),
+        code: JSON.stringify(_resource["code"]),
+        effectiveDateTime: JSON.stringify(_resource["effectiveDateTime"]),
+        valueQuantity: JSON.stringify(_resource["valueQuantity"])
+      };
+    
+      res.json(resData) ;
 
     } // if 
   } // if   

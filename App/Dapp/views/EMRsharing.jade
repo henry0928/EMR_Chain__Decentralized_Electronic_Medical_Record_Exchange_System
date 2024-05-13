@@ -3,6 +3,8 @@ html
   head
     title EMR-sharing Dashboard
     link(rel='stylesheet', href='stylesheets/EMRsharing.css')
+    link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css")
+    script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js")
     script(src='https://cdn.ethers.io/lib/ethers-5.2.umd.min.js' type='application/javascript')
     script(src='javascripts/abiScripts.js')
   body
@@ -18,7 +20,7 @@ html
           li.link(style='float:right')
             a(href='/consentIdentity') Consent Identity
           li.link(style='float:right')
-            a(href='/userModule') User module
+            a(href='/transactionRecord') Transaction Record
           li.link(style='float:right')
             a(href='/') DID-Dashboard
     main
@@ -392,15 +394,39 @@ html
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-
           const data = await response.json(); // parse the response as JSON
-          alert(JSON.stringify(data["result"]));
-          // location.reload() ;
+          const result = {
+            resourceType: data.resourceType,
+            meta: data.meta,
+            status: data.status,
+            code: data.code,
+            effectiveDateTime: data.effectiveDataTime,
+            valueQuantity: data.valueQuantity
+          };
+          new swal({
+            title: "結果",
+            html: `
+              <p><strong>Resource Type:</strong> <span id="resourceType">${result.resourceType}</span></p>
+              <p><strong>Meta:</strong> <span id="meta">${result.meta}</span></p>
+              <p><strong>Status:</strong> <span id="status">${result.status}</span></p>
+              <p><strong>Code:</strong> <span id="code">${result.code}</span></p>
+              <p><strong>Effective Date Time:</strong> <span id="effectiveDateTime">${result.effectiveDateTime}</span></p>
+              <p><strong>Value Quantity:</strong> <span id="valueQuantity">${result.valueQuantity}</span></p>
+            `,
+            icon: "success",
+            showCancelButton: true,
+            closeOnClickOutside: false,
+            closeOnEsc: false
+          }).then((result) => {
+            if (result.isConfirmed || result.isDismissed) {
+              location.reload();
+            } // if 
+          });
         } // try 
         catch (error) {
           console.error('Error:', error);
         } // catch
-      } // revoke()
+      } // authorization()
 
       const userIdElement = document.getElementById("userID");
       const RoleElement = document.getElementById("Role");

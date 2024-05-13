@@ -1,0 +1,93 @@
+doctype html
+html
+  head
+    title EMR-sharing Dashboard
+    link(rel='stylesheet', href='stylesheets/EMRsharing.css')
+    script(src='https://cdn.ethers.io/lib/ethers-5.2.umd.min.js' type='application/javascript')
+    script(src='javascripts/abiScripts.js')
+  body
+    header
+      nav
+        ul
+          li.home
+            a(href='/EMRsharing') EMR-sharing
+          li.link(style='float:right')
+            a(href='/createIdentity') Create Identity
+          li.link(style='float:right')
+            a(href='/login') EMR-sharing-login
+          li.link(style='float:right')
+            a(href='/consentIdentity') Consent Identity
+          li.link(style='float:right')
+            a(href='/transactionRecord') Transaction Record
+          li.link(style='float:right')
+            a(href='/') DID-Dashboard
+    main
+      .dashboard
+        .container
+          h2.user-info-title User Information
+          .user-info-details
+            p.user-info-item
+              span.user-info-label Wallet Address: 
+              span#walletAddress
+            p.user-info-item
+              span.user-info-label DID: 
+              span#DID
+            button#ReloadButton(type='button') Reload Page
+        .container
+          h2 Record
+          p All access records will be stored here
+          button#GetRecordButton(type='button') GetRecord
+          pre#data
+    script.
+      const IDcontractAddress = '0xE6042703475D0dd1bC2eB564a55F1832c2527171'; // IdentityManagement contract address
+      const walletAddressElement = document.getElementById("walletAddress");
+      const DIDElement = document.getElementById("DID");
+      async function getRecord(patientPublicKey) {
+        try {
+          const response = await fetch('/transactionRecord', {
+            method: 'POST', // or 'GET', 'PUT', etc.
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Authorization': 'Bearer ' + token // if you use token-based authentication
+            },
+            body: JSON.stringify({
+              patientPublicKey: patientPublicKey
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json(); // parse the response as JSON
+          if (data["result"]) {
+            const dataElement = document.getElementById("data");
+            dataElement.textContent = JSON.stringify(data["result"], null, 2);
+          } // if 
+          // location.reload() ;
+        } // try 
+        catch (error) {
+          console.error('Error:', error);
+        } // catch
+      } // getRecord()
+      const activeFunction = async function() {
+        if (window.ethereum) {
+            const provider = new ethers.providers.Web3Provider(window.ethereum) ;
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner() ;
+            const userAddress = await signer.getAddress() ;
+            walletAddressElement.textContent = userAddress;
+            const contract = new ethers.Contract(IDcontractAddress, IdentityManagerAbi, signer);
+            const DID = await contract.getId() ;
+            DIDElement.textContent = DID;
+        } // if 
+        else 
+          alert('Please download Metamask');
+      } ;
+      activeFunction() ;
+      GetRecordButton.addEventListener("click", async function() {
+        getRecord(walletAddressElement.textContent) ;
+      }) ;
+      ReloadButton.addEventListener("click", async function() {
+        location.reload() ;
+      }) ;
