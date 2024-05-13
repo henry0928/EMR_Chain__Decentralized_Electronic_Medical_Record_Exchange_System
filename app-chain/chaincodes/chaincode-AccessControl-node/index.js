@@ -139,12 +139,17 @@ class ACLContract extends Contract {
 
     // The patient_signature, hospital_signature are for digital signature use !!!
     // also patient_p_key and doctor_p_key either
-    const patientRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", patient_p_key, patient_signature], "identity-management");
+    const appIdRes = await ctx.stub.invokeChaincode("IDM", ["get_appID", patient_p_key], "identity-management"); // 先去驗證簽名的人是否就是病患
+    let appId = appIdRes.payload ;
+    if ( appId != patient_id )
+      return "You are not the identity holder of user!!!" ;
+
+    const patientRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", patient_p_key, patient_signature], "identity-management"); // 驗證簽名人角色是否是病患
     let pRole = patientRes.payload ;
     pRole = pRole.toString() ;
     if ( pRole != "patient" )
       return "You are not patient! (authorization)" ;
-    const doctorRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", doctor_p_key, doctor_signature], "identity-management");
+    const doctorRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", doctor_p_key, doctor_signature], "identity-management"); // 驗證提出交換病例之人的角色是否是醫生
     let dRole = doctorRes.payload ;
     dRole = dRole.toString() ;
     if ( dRole != "doctor" )
@@ -171,8 +176,8 @@ class ACLContract extends Contract {
     const buffer_object = JSON.parse(buffer.toString()) ;
     let acl_keys = Object.keys(buffer_object) ;
     request_id = JSON.parse(request_id) ;
-    for ( let attr in request_id ) {
-      let key = acl_keys.find((e) => e == attr) ;
+    for ( let attr in request_id ) {  // 是否通過授權規則
+      let key = acl_keys.find((e) => e == attr) ; 
       if ( !key ) return { error : "(authorization)Request hospital_id NOT_FOUND" } ;
       let req_level = buffer_object[key]["level"] ;
       if ( buffer_object[key]["open_access"] === false ) {

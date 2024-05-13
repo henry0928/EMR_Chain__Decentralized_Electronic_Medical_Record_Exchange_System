@@ -258,6 +258,42 @@ router.post('/revoke', async (req, res) => {
     res.json({ result: "Please create instance first!!"}) ;
 }) ;
 
+router.post('/validateHash', async (req, res) => {
+  const obj = req.body ;
+  const patientId = obj["patientId"] ;
+  delete obj.patientId ;
+  const hashObj = obj ;
+  const wallet = await buildWallet(Wallets, walletPath) ;
+  try {
+    let gateway = new Gateway() ;
+    const ccp = buildCCPOrg1() ;
+    try {
+      await gateway.connect(ccp, {
+        wallet : wallet,
+        identity: cgmh,
+        discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+      });
+
+      const network = await gateway.getNetwork(AccessControl);
+      const contract = network.getContract(ACL);
+      console.log("Access access control channel......(validateHash)") ;
+      info = await contract.submitTransaction("validate_hash", patientId, hashObj) ;
+      if (info)
+        info = JSON.parse(info.toString()) ;
+    } // try 
+    finally {
+      gateway.disconnect();
+    } // finally
+  } // try
+  catch (error) {
+    console.error(`******** FAILED to run the application: ${error}`);
+  } // catch
+  if (info)
+    res.json({ result: info }) ;
+  else
+    res.json({ result: "Please create instance first!!"}) ;
+}) ;
+
 router.post('/authorization', async (req, res) => {
   const patientId = req.body.patientId ;
   const patientPublicKey = req.body.patientPublicKey ;

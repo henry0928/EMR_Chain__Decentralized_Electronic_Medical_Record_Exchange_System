@@ -188,7 +188,7 @@ html
             -else
               .container-invisible
                 h2 Authorization
-                p Try to get the authorization from another hospital
+                p Try to get the authorization from user
                 div#seperateDiv
                   div(style="display: inline-block; flex: 1;")
                     label(for='patientId') patientId: 
@@ -221,12 +221,97 @@ html
                     button#doctorSignButton(type='button') Sign
                   div(style="flex: 1; display: flex; justify-content: center; align-items: center; height: 500px;")
                     button#authorizationButton(type='button') Authorization
-          - else
+          - else if (i == 4) // velidate hash
+            -if (role)
               .container 
-                h2 Container #{i+1}
-                p This is some sample text for Container #{i+1}.
+                h2 velidate hash
+                p Input the hash to compare with ledger, to decide which hospital's record need to be updated
+                form(onsubmit='submitForm(event)')
+                  div#container
+                  button(type='button', onclick='addField()') Add Field
+                  br
+                  br
+                  label(for='PatientInput') PatientId: 
+                  input#PatientInput(type='text', placeholder='patientId')
+                  br
+                  br
+                  button(type='submit') Submit
+            -else
+              .container-invisible 
+                h2 velidate hash
+                p Input the hash to compare with ledger, to decide which hospital's record need to be updated
+                form(onsubmit='submitForm(event)')
+                  div#container
+                  button(type='button', onclick='addField()') Add Field
+                  br
+                  br
+                  label(for='PatientInput') PatientId: 
+                  input#PatientInput(type='text', placeholder='patientId')
+                  br
+                  br
+                  button(type='submit') Submit
       
     script.
+      function addField() {
+        const container = document.getElementById('container');
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field';
+        const keyInput = document.createElement('input');
+        keyInput.type = 'text';
+        keyInput.placeholder = 'HospitalId';
+        const valueInput = document.createElement('input');
+        valueInput.type = 'text';
+        valueInput.placeholder = 'Hash';
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.textContent = 'Remove';
+        removeButton.onclick = function() {
+          container.removeChild(fieldDiv);
+        };
+        fieldDiv.appendChild(keyInput);
+        fieldDiv.appendChild(valueInput);
+        fieldDiv.appendChild(removeButton);
+        container.appendChild(fieldDiv);
+      } // addField()
+      async function validateHash(patientId, hashObj) {
+        hashObj["patientId"] = patientId ;
+        try {
+          const response = await fetch('/EMRsharing/validateHash', {
+            method: 'POST', // or 'GET', 'PUT', etc.
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Authorization': 'Bearer ' + token // if you use token-based authentication
+            },
+            body: JSON.stringify(hashObj)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json(); // parse the response as JSON
+          alert(data.result) ;
+        } // try 
+        catch (error) {
+          console.error('Error:', error);
+        } // catch
+      } // validateHash()
+      function submitForm(event) {
+        event.preventDefault();
+        const PatientIdInput = document.getElementById("PatientInput");
+        const container = document.getElementById('container');
+        const fields = container.getElementsByClassName('field');
+        const obj = {};
+        for (let i = 0; i < fields.length; i++) {
+          const inputs = fields[i].getElementsByTagName('input');
+          const key = inputs[0].value;
+          const value = inputs[1].value;
+          obj[key] = value;
+        } // for
+
+        alert(JSON.stringify(obj));
+        validateHash(PatientIdInput.value, obj) ;
+      } // submitForm()
       async function getACL(uid) {
         try {
           const response = await fetch('/EMRsharing/getACL', {

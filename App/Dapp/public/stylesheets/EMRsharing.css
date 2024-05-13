@@ -107,6 +107,16 @@ nav a:hover {
   margin-bottom: 10px;
 }
 
+.field {
+  margin-bottom: 10px;
+}
+.field input.key {
+  margin-right: 20px;
+}
+.field input.value {
+  margin-right: 10px;
+}
+
 #patientIdInput-1,
 #patientIdInput-2,
 #hospitalIdInput-1,

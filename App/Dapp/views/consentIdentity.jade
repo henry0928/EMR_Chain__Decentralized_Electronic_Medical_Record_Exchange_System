@@ -23,7 +23,7 @@ html
             a(href='/') DID-Dashboard
     main
       .dashboard
-        .user-info-box
+        .container
           h2.user-info-title User Information
           .user-info-details
             p.user-info-item
@@ -33,13 +33,13 @@ html
               span.user-info-label DID: 
               span#DID
             button#ReloadButton(type='button') Reload Page
-        .section
+        .container
           h2 Section 1
           form(id='uploadForm1' action='/consentIdentity/doctor' method='POST' enctype='multipart/form-data')
             input(type='hidden' id='DIDInput' name='DID')
             input(type='file' name='file1')
             input(type='submit' value='Upload')
-        .section
+        .container
           h2 Section 2
           form(id='uploadForm2' action='/consentIdentity/supervisor' method='POST' enctype='multipart/form-data')
             input(type='hidden' id='DIDInput2' name='DID')
