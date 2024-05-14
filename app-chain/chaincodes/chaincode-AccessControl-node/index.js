@@ -139,17 +139,17 @@ class ACLContract extends Contract {
 
     // The patient_signature, hospital_signature are for digital signature use !!!
     // also patient_p_key and doctor_p_key either
-    const appIdRes = await ctx.stub.invokeChaincode("IDM", ["get_appID", patient_p_key], "identity-management"); // 先去驗證簽名的人是否就是病患
-    let appId = appIdRes.payload ;
-    if ( appId != patient_id )
-      return "You are not the identity holder of user!!!" ;
+    // const appIdRes = await ctx.stub.invokeChaincode("IDM", ["get_appID", patient_p_key], "identity-management"); // 先去驗證簽名的人是否就是病患
+    // let appId = appIdRes.payload ;
+    // if ( appId.toString() != patient_id.toString() )
+    //   return "You are not the identity holder of user!!!" ;
 
-    const patientRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", patient_p_key, patient_signature], "identity-management"); // 驗證簽名人角色是否是病患
+    const patientRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", patient_p_key, patient_signature, patient_id], "identity-management"); // 驗證簽名人角色是否是病患
     let pRole = patientRes.payload ;
     pRole = pRole.toString() ;
     if ( pRole != "patient" )
       return "You are not patient! (authorization)" ;
-    const doctorRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", doctor_p_key, doctor_signature], "identity-management"); // 驗證提出交換病例之人的角色是否是醫生
+    const doctorRes = await ctx.stub.invokeChaincode("IDM", ["authenticate_identity", doctor_p_key, doctor_signature, "none"], "identity-management"); // 驗證提出交換病例之人的角色是否是醫生
     let dRole = doctorRes.payload ;
     dRole = dRole.toString() ;
     if ( dRole != "doctor" )

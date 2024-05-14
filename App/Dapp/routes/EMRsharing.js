@@ -260,6 +260,8 @@ router.post('/revoke', async (req, res) => {
 
 router.post('/validateHash', async (req, res) => {
   const obj = req.body ;
+  console.log("test..") ;
+  console.log(obj) ;
   const patientId = obj["patientId"] ;
   delete obj.patientId ;
   const hashObj = obj ;
@@ -270,14 +272,14 @@ router.post('/validateHash', async (req, res) => {
     try {
       await gateway.connect(ccp, {
         wallet : wallet,
-        identity: cgmh,
+        identity: "cgmh",
         discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
       });
 
       const network = await gateway.getNetwork(AccessControl);
       const contract = network.getContract(ACL);
       console.log("Access access control channel......(validateHash)") ;
-      info = await contract.submitTransaction("validate_hash", patientId, hashObj) ;
+      info = await contract.submitTransaction("validate_hash", patientId, JSON.stringify(hashObj)) ;
       if (info)
         info = JSON.parse(info.toString()) ;
     } // try 
@@ -321,6 +323,7 @@ router.post('/authorization', async (req, res) => {
       const contract = network.getContract(ACL);
       console.log("Access access control channel......(authorization)") ;
       info = await contract.submitTransaction("authorization", patientId, patientPublicKey, doctorPublicKey, patientSignature, doctorSignature, 1, JSON.stringify(requestObj));
+      console.log(info.toString()) ;
       if (info)
         info = JSON.parse(info.toString()) ;
     } // try 

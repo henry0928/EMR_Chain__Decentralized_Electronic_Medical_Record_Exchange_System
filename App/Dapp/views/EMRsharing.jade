@@ -222,7 +222,7 @@ html
                   div(style="flex: 1; display: flex; justify-content: center; align-items: center; height: 500px;")
                     button#authorizationButton(type='button') Authorization
           - else if (i == 4) // velidate hash
-            -if (role)
+            -if (role == "doctor")
               .container 
                 h2 velidate hash
                 p Input the hash to compare with ledger, to decide which hospital's record need to be updated
@@ -238,7 +238,7 @@ html
                   button(type='submit') Submit
             -else
               .container-invisible 
-                h2 velidate hash
+                h2 validate hash
                 p Input the hash to compare with ledger, to decide which hospital's record need to be updated
                 form(onsubmit='submitForm(event)')
                   div#container
@@ -289,8 +289,28 @@ html
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          const data = await response.json(); // parse the response as JSON
-          alert(data.result) ;
+          let data = await response.json(); // parse the response as JSON
+          data = data.result ;
+          delete data.Creater ; 
+          let htmlContent = "";
+          for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+              htmlContent += `<p><strong>${key}:</strong> <span id="${key}">${data[key]}</span></p>`;
+            } // if 
+          } // for
+          new swal({
+            title: "結果",
+            html:htmlContent,
+            icon: "success",
+            showCancelButton: true,
+            closeOnClickOutside: false,
+            closeOnEsc: false
+          }).then((result) => {
+            if (result.isConfirmed || result.isDismissed) {
+              location.reload();
+            } // if
+          });
+          //alert(JSON.stringify(data.result)) ;
         } // try 
         catch (error) {
           console.error('Error:', error);
@@ -309,7 +329,8 @@ html
           obj[key] = value;
         } // for
 
-        alert(JSON.stringify(obj));
+        //alert(JSON.stringify(obj));
+        // obj["patientId"] = PatientIdInput.value ;
         validateHash(PatientIdInput.value, obj) ;
       } // submitForm()
       async function getACL(uid) {
