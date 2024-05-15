@@ -16,6 +16,8 @@ router.post('/', async function(req, res) {
   let patientId = req.body.patientId ;
   let token = req.body.token ;
   let address = req.body.address ;
+  let hospitalDID = req.body.DID ;
+  let requester = req.body.reqId ;
   console.log("verifyModule...") ;
   console.log(patientId) ;
   console.log(token) ;
@@ -49,7 +51,11 @@ router.post('/', async function(req, res) {
     console.error(`******** FAILED to run the application: ${error}`);
   } // catch
   try {
-    const userData = jwt.verify(token, publicKey);
+    const payloadData = jwt.verify(token, publicKey); 
+    if ( payloadData["sub"] != hospitalDID )
+      res.json({ message: `Verify Fail with hospitalDID`});
+    if ( payloadData["iss"] != "EMRsharingSystem" )
+      res.json({ message: `Verify Fail with token issuer`});
     var responseData ;
     const fhirServerAddress = address + "/Observation?subject=144&_pretty=true" ; // pretend that fhir server Knows the patient is is 144
     try {
@@ -73,7 +79,7 @@ router.post('/', async function(req, res) {
         const network = await gateway.getNetwork(TransactionRecord);
         const contract = network.getContract(TSR);
         console.log("Access transactionRecord channel......(verifyModule)") ;
-        let _info = await contract.submitTransaction("record", patientId, "cgmh", "ntuh",
+        let _info = await contract.submitTransaction("record", patientId, requester, "ntuh",
                                                       "observation", "condition understanding", "approved") ;
         console.log(JSON.parse(_info.toString())) ;
       } // try 

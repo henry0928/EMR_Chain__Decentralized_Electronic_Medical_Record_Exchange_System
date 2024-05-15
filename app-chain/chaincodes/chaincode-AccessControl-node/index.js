@@ -130,11 +130,12 @@ class ACLContract extends Contract {
     return { success : "OK (update_hash)" } ; 
   } // update_hash()
 
-  async authorization(ctx, patient_id, patient_p_key, doctor_p_key, patient_signature, doctor_signature, self_level, request_id) {
+  async authorization(ctx, patient_id, patient_p_key, doctor_p_key, patient_signature, doctor_signature, self_level, request_id, hospitalDID) {
     // patient_id : 病患app_id
     // doctor_p_key : 想要存取其他醫院health-data的doctor main identity public key
     // signature : patient and doctor signature
     // request_id : object, hospital_id : hospital_name, 因無法使用array型傳遞 使用object取代
+    // hospitalDID : need to put in the JWT token to make share the token is using by hospital
     let result = {} ;// must be a pair with hospital_id -> url ;
 
     // The patient_signature, hospital_signature are for digital signature use !!!
@@ -166,9 +167,8 @@ class ACLContract extends Contract {
 
     // Define the payload
     const payload = {
-      id: 1,
-      name: 'EMRsharingSystem',
-      email: 'EMRsharing@example.com',
+      iss: "EMRsharingSystem",
+      sub: hospitalDID, 
     };
 
     const buffer = await ctx.stub.getState(patient_id) ;

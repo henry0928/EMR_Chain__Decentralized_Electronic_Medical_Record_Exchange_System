@@ -322,7 +322,8 @@ router.post('/authorization', async (req, res) => {
       const network = await gateway.getNetwork(AccessControl);
       const contract = network.getContract(ACL);
       console.log("Access access control channel......(authorization)") ;
-      info = await contract.submitTransaction("authorization", patientId, patientPublicKey, doctorPublicKey, patientSignature, doctorSignature, 1, JSON.stringify(requestObj));
+      info = await contract.submitTransaction("authorization", patientId, patientPublicKey, doctorPublicKey, patientSignature
+                                              , doctorSignature, 1, JSON.stringify(requestObj), "cgmhDID");
       console.log(info.toString()) ;
       if (info)
         info = JSON.parse(info.toString()) ;
@@ -347,7 +348,9 @@ router.post('/authorization', async (req, res) => {
       let payload = {
         patientId: patientId,
         token: info["token"],
-        address: info[requestId]
+        address: info[requestId],
+        DID:"cgmhDID",
+        reqId: "cgmh"
       };
       
       let response = await fetch('http://140.113.207.45:9999/verifyModule', {

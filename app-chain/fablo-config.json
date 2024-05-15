@@ -82,13 +82,6 @@
             "peer0",
             "peer1"
           ]
-        },
-        {
-          "name": "Org2",
-          "peers": [
-            "peer0",
-            "peer1"
-          ]
         }
       ]
     },
