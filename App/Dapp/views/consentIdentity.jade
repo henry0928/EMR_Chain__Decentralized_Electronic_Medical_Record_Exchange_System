@@ -34,13 +34,13 @@ html
               span#DID
             button#ReloadButton(type='button') Reload Page
         .container
-          h2 Section 1
+          h2 Consent "Doctor" Role
           form(id='uploadForm1' action='/consentIdentity/doctor' method='POST' enctype='multipart/form-data')
             input(type='hidden' id='DIDInput' name='DID')
             input(type='file' name='file1')
             input(type='submit' value='Upload')
         .container
-          h2 Section 2
+          h2 Consent "Supervisor" Role
           form(id='uploadForm2' action='/consentIdentity/supervisor' method='POST' enctype='multipart/form-data')
             input(type='hidden' id='DIDInput2' name='DID')
             input(type='file' name='file2')
