@@ -79,7 +79,7 @@ async function createIdentity(publicKey, did, option1, userKey) {
 		try {
 			await gateway.connect(ccp, {
 				wallet : wallet,
-				identity: adminID,
+				identity: "cgmh",
 				discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
 			});
   
