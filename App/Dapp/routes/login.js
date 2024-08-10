@@ -18,6 +18,21 @@ const walletPath = path.join(__dirname, 'wallet');
 const adminID = "org1ADMIN" ;
 
 var router = express.Router();
+// const Gccp = buildCCPOrg1() ;
+// let testGateway ;
+// async function forTest() {
+//   const Gwallet = await buildWallet(Wallets, walletPath) ;
+//   testGateway = new Gateway() ;
+//   await testGateway.connect(Gccp, {
+//     wallet : Gwallet,
+//     identity: "admin",
+//     discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
+//   });
+//   console.log("for test") ;
+// } // forTest()
+
+// forTest() ;
+
 
 async function login(publicKey, signature, message) {
     let info ; 
@@ -36,7 +51,7 @@ async function login(publicKey, signature, message) {
         const network = await gateway.getNetwork(IdentityManagement);
         // Get the contract from the network.
         const contract = network.getContract(IDM);
-        console.log("Access IdentityManagement channel......") ;``
+        console.log("Access IdentityManagement channel......") ;
         info = await contract.submitTransaction("login", publicKey, signature, message) ;
       } // try 
       finally {
@@ -77,6 +92,30 @@ router.post('/', async(req, res) => {
     const redirectUrl = `/EMRsharing?userId=${userId}&role=${role}`;
     res.redirect(redirectUrl);
     // res.render('EMRsharing', { userId: userId, role: role });
+});
+
+router.post('/loginTest', async(req, res) => {
+  // const wallet = await buildWallet(Wallets, walletPath);
+  const walletAddress = req.body.walletAddressInput ;
+  const signature = req.body.signatureInput ;
+  const encryptKey = req.body.encryptKeyInput ;
+  let resultObject ;
+  try {
+    const network = await testGateway.getNetwork(IdentityManagement);
+    const contract = network.getContract(IDM);
+    resultObject = await contract.submitTransaction("login", walletAddress, signature, "message") ;
+  } // try 
+  catch (error) {
+    res.status(500).send('chaincode broke!');
+    console.error(`******** FAILED to run the application: ${error}`);
+  } // catch
+  resultObject = JSON.parse(resultObject.toString()) ;
+  var _bytes = AES.decrypt(resultObject["x509IdentityCipher"], encryptKey) ;
+  const userX509Identity = JSON.parse(_bytes.toString(encUtf8)) ;
+  if (userX509Identity)
+    res.json({ result: userX509Identity }) ;
+  else
+    res.status(500).send('login broke!');
 });
 
 module.exports = router;

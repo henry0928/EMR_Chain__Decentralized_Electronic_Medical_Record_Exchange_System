@@ -15,7 +15,7 @@ class IDMContract extends Contract {
     const input = ctx.stub.getFunctionAndParameters() ;
     const commit_id = ctx.clientIdentity.getAttributeValue("user_id") ;
     const msp_id = ctx.clientIdentity.getMSPID() ;
-    if ( input["fcn"] === "create_identity" || input["fcn"] === "consent_sup_role" || input["fcn"] === "revoke_sup_role" ) { // Only org1 ADMIN can create identity
+    if ( input["fcn"] === "consent_sup_role" || input["fcn"] === "revoke_sup_role" ) { // Only org1 ADMIN can create identity
       if ( commit_id != "org1ADMIN" || msp_id != "Org1MSP" ) {
         const log = "Only ADMIN can create the Identity ( Wrong commit_id: " + commit_id + " ) " + " (" + input["fcn"] + ")" ;
         throw new Error(log) ;   

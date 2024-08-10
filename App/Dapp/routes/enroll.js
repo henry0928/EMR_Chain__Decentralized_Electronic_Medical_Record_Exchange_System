@@ -4,6 +4,17 @@ const { ethers } = require('ethers');
 var crypto = require("crypto");
 var router = express.Router();
 const walletAddress = "0xc0d8F541Ab8B71F20c10261818F2F401e8194049" ;
+// Connect to the Ethereum network
+const Gprovider = new ethers.providers.JsonRpcProvider('http://localhost:8545'); // Update with your network URL
+
+// Set up the signer (account) that will be used to send transactions
+const GprivateKey = '0x0cc0c2de7e8c30525b4ca3b9e0b9703fb29569060d403261055481df7014f7fa'; // Update with your private key
+const Gwallet = new ethers.Wallet(GprivateKey, Gprovider);
+
+// Set up the contract instance
+const GcontractAddress = "0xE6042703475D0dd1bC2eB564a55F1832c2527171";
+const GIdentityManagerAbi = readAbi("IdentityManager") ;
+const Gcontract = new ethers.Contract(GcontractAddress, GIdentityManagerAbi, Gwallet);
 
 async function adduser(_hashId) {
   // Connect to the Ethereum network
@@ -51,6 +62,20 @@ router.post('/', function(req, res, next) {
     </script>
   `;
   res.send(script);
+});
+
+router.post('/testEnroll', async function(req, res, next) {
+  const name = req.body.name;
+  const email = req.body.email;
+  const nationalid = req.body.nationalid ;
+  // hashId = crypto.createHash("sha256").update(nationalid).digest("hex") ; // To make the DID
+  try {
+    await Gcontract.addUser(nationalid); // Update with your function name and arguments if applicable
+    res.json({ message: `success`});    
+  } // try 
+  catch (error) {
+    res.status(500).send('Something broke!');
+  } // catch
 });
 
 module.exports = router;

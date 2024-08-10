@@ -32,16 +32,15 @@ class ACLContract extends Contract {
         throw new Error(log) ;    
       } // if     
     } // if
-    // else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only health-provider(doctor) can update
-    //   const response = await ctx.stub.invokeChaincode("IDM", ["verify_role", commit_id], "identity-management");
-    //   let role = response.payload ;
-    //   role = role.toString() ;
-    //   // if ( role != "doctor" ) {
-    //   //   const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong role: " + role + " ) " +  "(" + input["fcn"] + ")" ;
-    //   //   throw new Error(log) ;    
-    //   // } // if
-    //   ; // test
-    // } // else if 
+    else if ( input["fcn"] === "update_hash" || input["fcn"] === "update_instance" ) { // Only health-provider(doctor) can update
+      const response = await ctx.stub.invokeChaincode("IDM", ["verify_role", commit_id], "identity-management");
+      let role = response.payload ;
+      role = role.toString() ;
+      if ( role != "doctor" ) {
+        const log = "Hospital_ID is NOT MATCH, Reject transaction!!! ( Wrong role: " + role + " ) " +  "(" + input["fcn"] + ")" ;
+        throw new Error(log) ;    
+      } // if
+    } // else if 
       
   } // beforeTransaction()
 

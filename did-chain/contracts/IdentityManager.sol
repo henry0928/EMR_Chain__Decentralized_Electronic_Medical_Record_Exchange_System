@@ -82,7 +82,7 @@ contract IdentityManager {
 
     function authentication(string calldata DID, 
                             bytes memory messageHash,
-                            bytes memory signature) external view returns(bool) {
+                            bytes memory signature) external returns(bool) {
       address expectedSigner = IdentityInfo[DID].userAddress ;
       bytes32 ethSignedMessageHash = keccak256(
         abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)

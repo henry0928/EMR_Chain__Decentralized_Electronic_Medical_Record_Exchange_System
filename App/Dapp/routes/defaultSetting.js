@@ -28,6 +28,7 @@ const walletPath = path.join(__dirname, 'wallet');
 const walletPath2 = path.join(__dirname, 'wallet2');
 const org1ADMIN = 'org1ADMIN';
 const org2ADMIN = 'org2ADMIN';
+const testUser = "test" ;
 const cgmhPublicKey = "0x3E014E5c311a7D6F652CA4F8bb016f4338A44118" ; // 倒數第二個帳號
 const ntuhPublicKey = "0x6F03947036cba3279b07Cd6ea5Ca674cA51E52ba" ; // 台大醫院公鑰
 
@@ -36,6 +37,52 @@ const ntuhPublicKey = "0x6F03947036cba3279b07Cd6ea5Ca674cA51E52ba" ; // 台大�
 function prettyJSONString(inputString) {
 	return JSON.stringify(JSON.parse(inputString), null, 2);
 }
+
+async function add200userWallet() {
+	try {
+		const ccp = buildCCPOrg1();
+		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
+		const wallet = await buildWallet(Wallets, walletPath);
+		for ( let i = 0 ; i < 200 ; i++ ) {
+			await registerAndEnrollUser(caClient, wallet, mspOrg1, String(i)); // Enroll the user
+			console.log(i) ;  
+		} // for 
+	} // try
+		catch (error) {
+		console.error(`******** FAILED to run the application: ${error}`);
+		process.exit(1);
+	} // catch
+} // add200userWallet()
+
+async function create200user() {
+  try {
+	const ccp = buildCCPOrg1();
+	const wallet = await buildWallet(Wallets, walletPath);
+	let gateway = new Gateway();
+	try {
+		await gateway.connect(ccp, {
+			wallet : wallet,
+			identity: "cgmh", // cgmh == 長庚醫院
+			discovery: { enabled: true, asLocalhost: true } 
+		});
+		const network = await gateway.getNetwork(AccessControl);
+		const contract = network.getContract(ACL) ;
+		for ( let i  = 0 ; i < 200 ; i++ ) {
+			let info = await contract.submitTransaction('create_patient_instance', String(i));
+			await contract.submitTransaction("update_instance", String(i), "NYCU", "NYCU.com", "0X5678") ;
+			console.log(String(i)) ; 
+		} // for 
+	} // try 
+	finally {
+		gateway.disconnect();
+	} // finally
+  } // try
+  catch (error) {
+	console.error(`******** FAILED to run the application: ${error}`);
+	process.exit(1);
+  } // catch
+
+} // create50user()
 
 async function main() {
 	try {
@@ -62,6 +109,7 @@ async function main() {
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1ADMIN); // Enroll the org1ADMIN
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, "cgmh"); // Enroll the 長庚醫院
 		await registerAndEnrollUser(caClient, wallet, mspOrg1, "ntuh"); // Enroll the 台大醫院
+		await registerAndEnrollUser(caClient, wallet, mspOrg1, testUser); // Enroll the testUser
 		await registerAndEnrollUser(ca2Client, wallet2, mspOrg2, org2ADMIN); // Enroll the org2ADMIN
 
 		// Create a new gateway instance for interacting with the fabric network.
@@ -107,6 +155,26 @@ async function main() {
 			gateway.disconnect();
 		} // finally
 
+		gateway = new Gateway();
+		try {
+			await gateway.connect(ccp, {
+				wallet : wallet,
+				identity: "cgmh", // cgmh == 長庚醫院
+				discovery: { enabled: true, asLocalhost: true } 
+			});
+			const network = await gateway.getNetwork(AccessControl);
+			const contract = network.getContract(ACL) ;
+			let info = await contract.submitTransaction('create_patient_instance', testUser);
+			console.log(JSON.parse(info.toString())) ;
+			// info = await contract.submitTransaction("update_instance", testUser, "NYCU", "NYCU.com", "0X5678") ;
+			// info = await contract.submitTransaction("update_instance", testUser, "CYCU", "CYCU.com", "0X1234") ;
+      		info = await contract.submitTransaction('get', testUser);
+			console.log(JSON.parse(info.toString()));
+		} // try 
+		finally {
+			// create200user();
+			gateway.disconnect();
+		} // finally
 	} catch (error) {
 		console.error(`******** FAILED to run the application: ${error}`);
 		process.exit(1);
@@ -114,3 +182,4 @@ async function main() {
 }
 
 main();
+// add200userWallet() ;

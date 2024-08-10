@@ -52,12 +52,12 @@ html
           .input-container
             label.user-info-label(for='s_privateKeyInput') Upload Encrypted App-Chain Private Key:
             br
-            p.user-info-message Please choose the Organization.
+            p.user-info-message Please choose the Application.
             select#setOrgOption(name='App')
-              option(value='' selected='') Choose the Organization
-              option(value='CGMF') 長庚醫院CGMF
-              option(value='CHUH') 中國醫藥大學CHUH
-              option(value='NTUH') 臺大醫院NTUH
+              option(value='' selected='') Choose the Application
+              option(value='EMRsharing') EMR-sharing
+              option(value='DNAsequence') DNA sequence
+              option(value='OpenBanking') OpenBanking
             input#s_privateKeyInput(type='text' size='20' placeholder='Enter App-Chain Private Key')
             button#uploadPrikeyButton.primary(type='button') Upload
         .user-info-box
